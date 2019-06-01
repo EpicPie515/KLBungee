@@ -1,0 +1,41 @@
+languages: 
+  locales: 
+    - en_US
+    - ru_RU
+server-index: 
+  #0 is network
+  1: hub01
+  2: hub02
+  51: uhc01
+  52: uhc02
+  101: blm01
+  102: blm02
+  103: blm03
+  201: mbm01
+  202: mbm02
+  203: mbm03
+  204: mbm04
+  205: mbm05
+
+xp-symbol: '\u272F'
+money-symbol: '$'
+
+db:
+  user: user
+  pass: password
+  db: dbname
+  host: localhost
+  port: 3306
+
+cacheUpdateInterval: 60000
+cacheFlushInterval: 900000
+
+muted-blocked-commands:
+  - msg
+  - r
+  - reply
+  - tell
+  - w
+  - whisper
+  - t
+  - helpop

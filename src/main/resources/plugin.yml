@@ -1,0 +1,4 @@
+name: KLBungee
+main: lol.kangaroo.bungee.KLBungeePlugin
+version: 0.0.2
+author: KJNine
