@@ -132,6 +132,10 @@ public enum PlayerLevel {
 	 */
 	public static void addExperience(UUID uuid, long amount, boolean useMultiplier, boolean sendMessage) {
 		CachedPlayer cp = pm.getCachedPlayer(uuid);
+		addExperience(cp, amount, useMultiplier, sendMessage);
+	}
+	
+	public static void addExperience(CachedPlayer cp, long amount, boolean useMultiplier, boolean sendMessage) {
 		String multiplierMessage = "";
 		if(useMultiplier) {
 			float multiplier = (float) Setting.getSetting(Setting.XPMULTIPLIER);

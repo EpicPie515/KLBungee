@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Locale;
 
 import lol.kangaroo.bungee.commands.CommandExecutor;
+import lol.kangaroo.bungee.commands.player.LinksCommand;
 import lol.kangaroo.bungee.commands.punish.BanCommand;
 import lol.kangaroo.bungee.commands.punish.BlacklistCommand;
 import lol.kangaroo.bungee.commands.punish.MuteCommand;
@@ -19,6 +20,7 @@ import lol.kangaroo.bungee.listeners.BlacklistListener;
 import lol.kangaroo.bungee.listeners.MuteListener;
 import lol.kangaroo.bungee.listeners.PermissionListener;
 import lol.kangaroo.bungee.listeners.PlayerDatabaseListener;
+import lol.kangaroo.bungee.listeners.VoteListener;
 import lol.kangaroo.bungee.permissions.RankManager;
 import lol.kangaroo.bungee.player.Money;
 import lol.kangaroo.bungee.player.PlayerCacheManager;
@@ -52,6 +54,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	private PunishManager pum;
 	private PlayerManager pm;
 	private PermissionManager prm;
+	private VoteListener vol;
 	
 	private RankManager rm;
 	
@@ -109,6 +112,8 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		CommandExecutor.registerCommand(new UnbanCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new UnblacklistCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new UnmuteCommand(pm, getProxy()));
+		CommandExecutor.registerCommand(new LinksCommand(pm, getProxy()));
+		CommandExecutor.registerCommand(new LinksCommand(pm, getProxy()));
 		
 		
 		pcm.scheduleUpdateTasks(pm);
@@ -139,6 +144,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		pluginManager.registerListener(this, pdl = new PlayerDatabaseListener(pm, this));
 		pluginManager.registerListener(this, prl = new PermissionListener(pm, this));
 		pluginManager.registerListener(this, ajal = new AdminJoinAlertListener(pm, this));
+		pluginManager.registerListener(this, vol = new VoteListener(pm));
 
 		pluginManager.registerListener(this, bal = new BanListener(this));
 		pluginManager.registerListener(this, bll = new BlacklistListener(this));
@@ -222,6 +228,10 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	
 	public MuteListener getMuteListener() {
 		return mul;
+	}
+	
+	public VoteListener getVoteListener() {
+		return vol;
 	}
 	
 	@Override

@@ -1,12 +1,17 @@
 package lol.kangaroo.bungee.player;
 
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
+import lol.kangaroo.common.database.Setting;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerUpdateCache;
 import lol.kangaroo.common.player.PlayerVariable;
+import lol.kangaroo.common.util.MSG;
 
 public class Money {
 	private static PlayerManager pm;
@@ -125,6 +130,26 @@ public class Money {
 			cp.setVariableInUpdate(c, PlayerVariable.NETWORK_BALANCE, cur + addTo);
 			c.pushUpdates();
 		});
+	}
+	
+	private static final Pattern reasonPattern = Pattern.compile("^(?:([CL]).*: ?)(.*)$");
+	
+	public static void addToBalanceAndMessage(CachedPlayer cp, boolean useMultiplier, long addTo) {
+		String multiplierMessage = "";
+		if(useMultiplier) {
+			float multiplier = (float) Setting.getSetting(Setting.COINMULTIPLIER);
+			addTo *= multiplier;
+			if(multiplier != 1f) {
+				String mreason = (String) Setting.getSetting(Setting.COINMREASON);
+				Matcher m = reasonPattern.matcher(mreason);
+				if(m.matches()) {
+					if(m.group(1).equals("C")) multiplierMessage = MSG.color("&7(&b" + m.group(2) + "&7)");
+					else if(m.group(1).equals("L")) multiplierMessage = new MSG(m.group(2)).getMessage(cp);
+				}
+			}
+		}
+		addToBalance(cp, addTo);
+		Message.sendMessage(cp, MSG.MONEY_ADDED, addTo, multiplierMessage);
 	}
 	
 	/**

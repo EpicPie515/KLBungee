@@ -250,8 +250,6 @@ public class Message {
 		return true;
 	}
 	
-	// TODO finish breaking up lines here
-	
 	/**
 	 * Sends the given string to the player if they are online, otherwise returns false..
 	 * 
