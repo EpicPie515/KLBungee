@@ -187,6 +187,8 @@ public class PlayerManager {
 		newVariables.put(PlayerVariable.ADMIN_JOINALERT, false);
 		newVariables.put(PlayerVariable.LANGUAGE, "en_US");
 		newVariables.put(PlayerVariable.NICKNAME, con.getName());
+		newVariables.put(PlayerVariable.VOTE_LAST, new Timestamp(0));
+		newVariables.put(PlayerVariable.VOTE_STREAK, 0);
 		
 		DatabasePlayer dp = getDatabasePlayer(uuid);
 		dp.setAllVariablesMap(newVariables);
