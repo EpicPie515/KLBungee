@@ -126,10 +126,6 @@ public class PlayerVariableManager implements IPlayerVariableManager {
 			PlayerVariable pv = entry.getKey();
 			Object value = entry.getValue();
 			try {
-				if(pv.getVariableClass() != value.getClass()) {
-					//TODO Debug
-					System.out.println("PV Defines Class as " + pv.getVariableClass() + ", Value Class is " + value.getClass());
-				}
 				Method toStr = pv.getVariableClass().getMethod(pv.getToStringMethod());
 				String queryStr;
 				Object[] objs;
