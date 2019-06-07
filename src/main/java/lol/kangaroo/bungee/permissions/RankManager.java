@@ -60,19 +60,22 @@ public class RankManager implements IRankManager {
 	}
 
 	@Override
-	public Rank getRank(UUID uuid) {
+	public Rank getRank(UUID uuid, boolean useModifiedRank) {
+		//TODO implement rank modifications
 		CachedPlayer cp = pm.getCachedPlayer(uuid);
 		if(cp == null) return null;
 		return (Rank) cp.getVariable(PlayerVariable.RANK);
 	}
 
 	@Override
-	public Rank getRank(BasePlayer pl) {
+	public Rank getRank(BasePlayer pl, boolean useModifiedRank) {
+		//TODO implement rank modifications
 		return (Rank) pl.getVariable(PlayerVariable.RANK);
 	}
 
 	@Override
-	public Rank getRankDirect(UUID uuid) {
+	public Rank getRankDirect(UUID uuid, boolean useModifiedRank) {
+		//TODO implement rank modifications
 		DatabasePlayer dp = pm.getDatabasePlayer(uuid);
 		if(dp == null) return null;
 		return (Rank) dp.getVariable(PlayerVariable.RANK);
