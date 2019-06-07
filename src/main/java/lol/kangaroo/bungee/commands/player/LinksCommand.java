@@ -3,6 +3,7 @@ package lol.kangaroo.bungee.commands.player;
 import lol.kangaroo.bungee.commands.CommandExecutor;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.util.Message;
+import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerVariable;
@@ -13,7 +14,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 public class LinksCommand extends CommandExecutor {
 
 	public LinksCommand(PlayerManager pm, ProxyServer proxy) {
-		super(pm, proxy, "links", "", "info", "ts", "discord", "website", "store", "vote");
+		super(pm, proxy, "links", Rank.PLAYER.getPerm(), "info", "ts", "discord", "website", "store", "vote");
 	}
 
 	@Override

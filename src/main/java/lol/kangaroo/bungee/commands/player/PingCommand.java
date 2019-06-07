@@ -3,6 +3,7 @@ package lol.kangaroo.bungee.commands.player;
 import lol.kangaroo.bungee.commands.CommandExecutor;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.util.Message;
+import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerVariable;
@@ -13,7 +14,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 public class PingCommand extends CommandExecutor {
 
 	public PingCommand(PlayerManager pm, ProxyServer proxy) {
-		super(pm, proxy, "ping", "");
+		super(pm, proxy, "ping", Rank.PLAYER.getPerm());
 	}
 
 	@Override
