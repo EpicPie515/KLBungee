@@ -1,8 +1,10 @@
 package lol.kangaroo.bungee.commands;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import lol.kangaroo.bungee.KLBungeePlugin;
@@ -18,6 +20,9 @@ import net.md_5.bungee.api.plugin.Command;
 
 public abstract class CommandExecutor {
 	
+
+	protected Map<String, Subcommand> subCommands = new HashMap<>();
+	
 	protected PlayerManager pm;
 	protected ProxyServer proxy;
 	protected String label;
@@ -30,6 +35,12 @@ public abstract class CommandExecutor {
 		this.label = label;
 		this.perm = perm;
 		this.aliases = Arrays.asList(aliases);
+	}
+	
+	protected void registerSubcommand(Subcommand sub) {
+		subCommands.put(sub.getLabel(), sub);
+		for(String al : sub.getAliases())
+			subCommands.put(al, sub);
 	}
 	
 	public String getLabel() {

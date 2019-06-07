@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import lol.kangaroo.bungee.commands.CommandExecutor;
 import lol.kangaroo.bungee.commands.player.LinksCommand;
+import lol.kangaroo.bungee.commands.player.PingCommand;
 import lol.kangaroo.bungee.commands.punish.BanCommand;
 import lol.kangaroo.bungee.commands.punish.BlacklistCommand;
 import lol.kangaroo.bungee.commands.punish.MuteCommand;
@@ -113,7 +114,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		CommandExecutor.registerCommand(new UnblacklistCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new UnmuteCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new LinksCommand(pm, getProxy()));
-		CommandExecutor.registerCommand(new LinksCommand(pm, getProxy()));
+		CommandExecutor.registerCommand(new PingCommand(pm, getProxy()));
 		
 		
 		pcm.scheduleUpdateTasks(pm);
