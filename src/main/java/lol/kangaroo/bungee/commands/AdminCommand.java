@@ -29,7 +29,11 @@ public class AdminCommand extends CommandExecutor {
 		String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
 		for(String k : subCommands.keySet()) {
 			if(k.equalsIgnoreCase(args[0])) {
-				subCommands.get(k).execute(sender, bp, args[0], subArgs);
+				Subcommand s = subCommands.get(k);
+				if(sender.hasPermission(s.getPermission()))
+					s.execute(sender, bp, args[0], subArgs);
+				else
+					Message.sendMessage(bp, MSG.NO_PERM);
 				break;
 			}
 		}
@@ -44,7 +48,6 @@ public class AdminCommand extends CommandExecutor {
 		String[] subArgs = Arrays.copyOfRange(args, 1, args.length);
 		for(String k : subCommands.keySet()) {
 			if(k.equalsIgnoreCase(args[0])) {
-				// TODO permissions
 				subCommands.get(k).executeConsole(args[0], subArgs);
 				break;
 			}
