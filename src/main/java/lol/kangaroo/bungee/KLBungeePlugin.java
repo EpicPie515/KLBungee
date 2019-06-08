@@ -15,6 +15,7 @@ import lol.kangaroo.bungee.commands.punish.UnblacklistCommand;
 import lol.kangaroo.bungee.commands.punish.UnmuteCommand;
 import lol.kangaroo.bungee.config.ConfigManager;
 import lol.kangaroo.bungee.database.DatabaseInitializer;
+import lol.kangaroo.bungee.database.Logs;
 import lol.kangaroo.bungee.listeners.AdminJoinAlertListener;
 import lol.kangaroo.bungee.listeners.BanListener;
 import lol.kangaroo.bungee.listeners.BlacklistListener;
@@ -91,6 +92,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		di.createLogTables();
 		
 		Setting.init(db);
+		Logs.init(db);
 		
 		long pullUpdateInterval = settings.getLong("cacheUpdateInterval");
 		long flushInterval = settings.getLong("cacheFlushInterval");
@@ -106,7 +108,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		rm = new RankManager(pm);
 		
 		Money.init(pm);
-
+		
 		CommandExecutor.registerCommand(new BanCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new BlacklistCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new MuteCommand(pm, getProxy()));
