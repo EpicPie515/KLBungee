@@ -64,7 +64,7 @@ public class MuteListener implements Listener {
 				// No prefixes to reduce chat clutter.
 				// NICKNAME should only be used for at-the-moment things, such as chat
 				// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
-				String authorName = author != null ? (pl.getRankManager().getRank(author).getColor() + (String) author.getVariable(PlayerVariable.USERNAME)) : MSG.CONSOLE.getMessage(Locale.getDefault());
+				String authorName = author != null ? (pl.getRankManager().getRank(author, false).getColor() + (String) author.getVariable(PlayerVariable.USERNAME)) : MSG.CONSOLE.getMessage(Locale.getDefault());
 				String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM uuuu"));
 				String durStr = MSG.TIMEFORMAT_PERMANENT.getMessage(p);
 				String timeLeftStr = MSG.BANNED_TIMEPERMANENT.getMessage(p);

@@ -437,8 +437,8 @@ public class PlayerManager {
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(author != null)
-			authorName = pl.getRankManager().getRank(author).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
-		String targetName = pl.getRankManager().getRank(p).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
+			authorName = pl.getRankManager().getRank(author, false).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
+		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
 		String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM uuuu"));
 		String durStr = MSG.TIMEFORMAT_PERMANENT.getMessage(p);
 		String timeLeftStr = MSG.BANNED_TIMEPERMANENT.getMessage(p);
@@ -512,8 +512,8 @@ public class PlayerManager {
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(author != null)
-			authorName = pl.getRankManager().getRank(author).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
-		String targetName = pl.getRankManager().getRank(p).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
+			authorName = pl.getRankManager().getRank(author, false).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
+		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
 		String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM uuuu"));
 		String durStr = MSG.TIMEFORMAT_PERMANENT.getMessage(p);
 		String timeLeftStr = MSG.TIMEFORMAT_PERMANENT.getMessage(p);
@@ -588,8 +588,8 @@ public class PlayerManager {
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(author != null)
-			authorName = pl.getRankManager().getRank(author).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
-		String targetName = pl.getRankManager().getRank(p).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
+			authorName = pl.getRankManager().getRank(author, false).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
+		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
 		String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM uuuu"));
 		if(pp != null) {
 			server = pl.getServerID(pp.getServer().getInfo().getName());
@@ -628,8 +628,8 @@ public class PlayerManager {
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(author != null)
-			authorName = pl.getRankManager().getRank(author).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
-		String targetName = pl.getRankManager().getRank(p).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
+			authorName = pl.getRankManager().getRank(author, false).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
+		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
 		String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM uuuu"));
 		String km = MSG.KICKMESSAGE_KICK.getMessage(MSG.BANSCREEN_LINE.getMessage(p), p, authorName, date, reason, MSG.SUPPORT_EMAIL.getMessage(p), MSG.BANSCREEN_LINE.getMessage(p));
 		TextComponent kickMessage = new TextComponent(TextComponent.fromLegacyText(km));
@@ -664,8 +664,8 @@ public class PlayerManager {
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(unbanAuthor != null)
-			authorName = pl.getRankManager().getRank(unbanAuthor).getColor() + (String) unbanAuthor.getVariable(PlayerVariable.USERNAME);
-		String targetName = pl.getRankManager().getRank(p).getColor() + (String) p.getVariable(PlayerVariable.USERNAME);
+			authorName = pl.getRankManager().getRank(unbanAuthor, false).getColor() + (String) unbanAuthor.getVariable(PlayerVariable.USERNAME);
+		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.USERNAME);
 		
 		Ban ban = null;
 		for(Punishment pun : p.getActivePunishments())
@@ -701,8 +701,8 @@ public class PlayerManager {
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(unmuteAuthor != null)
-			authorName = pl.getRankManager().getRank(unmuteAuthor).getColor() + (String) unmuteAuthor.getVariable(PlayerVariable.USERNAME);
-		String targetName = pl.getRankManager().getRank(p).getColor() + (String) p.getVariable(PlayerVariable.USERNAME);
+			authorName = pl.getRankManager().getRank(unmuteAuthor, false).getColor() + (String) unmuteAuthor.getVariable(PlayerVariable.USERNAME);
+		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.USERNAME);
 		
 		Mute mute = null;
 		for(Punishment pun : p.getActivePunishments())
@@ -739,7 +739,7 @@ public class PlayerManager {
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(unblacklistAuthor != null)
-			authorName = pl.getRankManager().getRank(unblacklistAuthor).getColor() + (String) unblacklistAuthor.getVariable(PlayerVariable.USERNAME);
+			authorName = pl.getRankManager().getRank(unblacklistAuthor, false).getColor() + (String) unblacklistAuthor.getVariable(PlayerVariable.USERNAME);
 		String targetName = pl.getRankManager().getPrefix(p) + (String) p.getVariable(PlayerVariable.NICKNAME);
 		
 		Blacklist blacklist = null;

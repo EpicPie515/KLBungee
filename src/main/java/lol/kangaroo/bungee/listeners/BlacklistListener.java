@@ -49,7 +49,7 @@ public class BlacklistListener implements Listener {
 					CachedPlayer author = pm.getCachedPlayer(bl.getAuthor());
 					// NICKNAME should only be used for at-the-moment things, such as chat
 					// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
-					String authorName = author != null ? (pl.getRankManager().getRank(author).getColor() + (String) author.getVariable(PlayerVariable.USERNAME)) : MSG.CONSOLE.getMessage(Locale.getDefault());
+					String authorName = author != null ? (pl.getRankManager().getRank(author, false).getColor() + (String) author.getVariable(PlayerVariable.USERNAME)) : MSG.CONSOLE.getMessage(Locale.getDefault());
 					String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM uuuu"));
 					String bm = MSG.KICKMESSAGE_BLACKLIST.getMessage(cp, MSG.BANSCREEN_LINE.getMessage(cp), MSG.PUNISHMESSAGE_ARE.getMessage(cp), authorName, date, bl.getReason(), MSG.BANSCREEN_LINE.getMessage(cp));
 					e.setCancelReason(bm);
