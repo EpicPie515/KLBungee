@@ -105,13 +105,20 @@ public class DatabaseInitializer {
 				+ "(`UUID` CHAR(36), `TIMESTAMP` TIMESTAMP, "
 				+ "`REASON` VARCHAR(255), `AUTHOR` CHAR(36), `UNREASON` VARCHAR(255) DEFAULT NULL, "
 				+ "`UNTIMESTAMP` TIMESTAMP NULL DEFAULT NULL, `UNAUTHOR` CHAR(36) DEFAULT NULL, `SERVER` INT, `ACTIVE` BOOLEAN);");
-		
+
 		/** LOG_KICK - Kick Logs
 		 * 	No Key
 		 */
 		db.update("CREATE TABLE IF NOT EXISTS `log_kick` "
 				+ "(`UUID` CHAR(36), `TIMESTAMP` TIMESTAMP, `REASON` VARCHAR(255), "
 				+ "`AUTHOR` CHAR(36), `SERVER` INT)");
+		
+		/** LOG_VOTE - Vote Logs
+		 * 	No Key
+		 */
+		db.update("CREATE TABLE IF NOT EXISTS `log_vote` "
+				+ "(`USERNAME` VARCHAR(16), `UUID` CHAR(36) DEFAULT NULL, `TIMESTAMP` TIMESTAMP, `SERVICENAME` VARCHAR(255), "
+				+ "`NEWSTREAK` INT)");
 		
 		/** LOG_MUTE - Mute Logs
 		 * 	No Key
