@@ -81,6 +81,12 @@ public enum PlayerLevel {
 		return order;
 	}
 	
+	public String getFormatted(int lvl, boolean brackets) {
+		if(brackets)
+			return color + "[" + lvl + SYMBOL + "]";
+		else return color + "" + lvl + SYMBOL;
+	}
+	
 	private static PlayerManager pm;
 	private static ConfigManager conf;
 	
@@ -180,6 +186,7 @@ public enum PlayerLevel {
 
 	/**
 	 * Returns the player's level.
+	 * @param nickLevel whether to use the fake level by nickname rather than their real one.
 	 */
 	public static int getPlayerLevel(BasePlayer cp, boolean nickLevel) {
 		// TODO support nicknames

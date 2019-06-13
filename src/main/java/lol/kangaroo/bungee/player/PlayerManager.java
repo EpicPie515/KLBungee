@@ -70,11 +70,19 @@ public class PlayerManager {
 	}
 	
 	/**
-	 * Pass-through getter to lighten the amount of arguments on functions that already have PlayerManager
+	 * Pass-through getter to lessen the amount of arguments on functions that already have PlayerManager
 	 * @return
 	 */
 	public RankManager getRankManager() {
 		return rm;
+	}
+	
+	/**
+	 * Pass-through getter to lessen the amount of arguments on functions that already have PlayerManager
+	 * @return
+	 */
+	public PunishManager getPunishManager() {
+		return pum;
 	}
 	
 	/**
