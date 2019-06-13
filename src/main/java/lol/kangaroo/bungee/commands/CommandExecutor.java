@@ -71,7 +71,7 @@ public abstract class CommandExecutor {
 		Command labelCommand = new Command(ce.getLabel(), ce.getPermission()) {
 			@Override
 			public void execute(CommandSender sender, String[] args) {
-				CommandExecutor.execute(sender, this.getName(), args);
+					CommandExecutor.execute(sender, this.getName(), args);
 			}
 		};
 		ProxyServer.getInstance().getPluginManager().registerCommand(KLBungeePlugin.instance, labelCommand);

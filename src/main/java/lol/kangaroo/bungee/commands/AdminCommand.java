@@ -2,6 +2,7 @@ package lol.kangaroo.bungee.commands;
 
 import java.util.Arrays;
 
+import lol.kangaroo.bungee.commands.admin.CmdlistSub;
 import lol.kangaroo.bungee.commands.admin.TestvoteSub;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.util.Message;
@@ -18,6 +19,9 @@ public class AdminCommand extends CommandExecutor {
 		super(pm, proxy, "admin", Rank.SRMOD.getPerm(), "adm", "control", "con");
 		
 		registerSubcommand(new TestvoteSub(pm, proxy, this));
+		
+		
+		registerSubcommand(new CmdlistSub(pm, proxy, this, subCommands.values()));
 	}
 
 	@Override
