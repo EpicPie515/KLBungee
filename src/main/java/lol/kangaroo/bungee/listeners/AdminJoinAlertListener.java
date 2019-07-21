@@ -32,7 +32,7 @@ public class AdminJoinAlertListener implements Listener {
 				CachedPlayer cp = pm.getCachedPlayer(pp.getUniqueId());
 				Rank rank = (Rank) cp.getVariable(PlayerVariable.RANK);
 				if(rank.getLevel() > Rank.SRMOD.getLevel())
-					if((Boolean) cp.getVariable(PlayerVariable.ADMIN_JOINALERT))
+					if((Boolean) cp.getVariable(PlayerVariable.ADMIN_ALERT))
 						Message.sendMessage(cp, MSG.ADMIN_JOINALERT, op.getVariable(PlayerVariable.USERNAME));
 			}
 		});
@@ -47,7 +47,7 @@ public class AdminJoinAlertListener implements Listener {
 				CachedPlayer cp = pm.getCachedPlayer(pp.getUniqueId());
 				Rank rank = (Rank) cp.getVariable(PlayerVariable.RANK);
 				if(rank.getLevel() > Rank.SRMOD.getLevel())
-					if((Boolean) cp.getVariable(PlayerVariable.ADMIN_JOINALERT))
+					if((Boolean) cp.getVariable(PlayerVariable.ADMIN_ALERT))
 						Message.sendMessage(cp, MSG.ADMIN_LEAVEALERT, op.getVariable(PlayerVariable.USERNAME));
 			}
 		});
