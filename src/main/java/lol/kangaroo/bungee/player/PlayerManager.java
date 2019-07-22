@@ -192,7 +192,7 @@ public class PlayerManager {
 		newVariables.put(PlayerVariable.FIRSTJOIN, new Timestamp(System.currentTimeMillis()));
 		newVariables.put(PlayerVariable.LASTQUIT, new Timestamp(System.currentTimeMillis()));
 		newVariables.put(PlayerVariable.LASTJOIN, new Timestamp(System.currentTimeMillis()));
-		newVariables.put(PlayerVariable.ADMIN_JOINALERT, false);
+		newVariables.put(PlayerVariable.ADMIN_ALERT, false);
 		newVariables.put(PlayerVariable.LANGUAGE, "en_US");
 		newVariables.put(PlayerVariable.NICKNAME, con.getName());
 		newVariables.put(PlayerVariable.VOTE_LAST, new Timestamp(0));
@@ -226,7 +226,7 @@ public class PlayerManager {
 		Set<BasePlayer> staff = new HashSet<>();
 		for(ProxiedPlayer pp : proxy.getPlayers()) {
 			CachedPlayer cp = getCachedPlayer(pp.getUniqueId());
-			if(((Rank)cp.getVariable(PlayerVariable.RANK)).isStaff() && ((Boolean)cp.getVariable(PlayerVariable.ADMIN_JOINALERT)))
+			if(((Rank)cp.getVariable(PlayerVariable.RANK)).isStaff() && ((Boolean)cp.getVariable(PlayerVariable.ADMIN_ALERT)))
 				staff.add(cp);
 		}
 		return staff;
