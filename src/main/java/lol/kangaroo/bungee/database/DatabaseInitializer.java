@@ -127,6 +127,14 @@ public class DatabaseInitializer {
 				+ "(`UUID` CHAR(36), `TIMESTAMP` TIMESTAMP, `DURATION` BIGINT, "
 				+ "`REASON` VARCHAR(255), AUTHOR CHAR(36), `UNREASON` VARCHAR(255) DEFAULT NULL, "
 				+ "`UNTIMESTAMP` TIMESTAMP NULL DEFAULT NULL, `UNAUTHOR` CHAR(36) DEFAULT NULL, `SERVER` INT, `ACTIVE` BOOLEAN);");
+		
+		/** LOG_GRANT - Grant Logs
+		 * 	No Key
+		 */
+		db.update("CREATE TABLE IF NOT EXISTS `log_grant` "
+				+ "(`UUID` CHAR(36), `TIMESTAMP` TIMESTAMP, `AUTHOR` CHAR(36), "
+				+ "`ACTION` CHAR(1), `TYPE` CHAR(1), `TYPEVALUE` VARCHAR(255), `NOTE` VARCHAR(255), "
+				+ "`PERMVALUE` BOOLEAN");
 	
 		/** SETTINGS - InGame-Controlled Settings
 		 *  Primary Key - (SETTING)
