@@ -33,7 +33,7 @@ public class CmdlistSub extends Subcommand {
 					lines[l++] = "&c" + s[i].getLabel();
 				else lines[l] = "&c" + s[i].getLabel() + "&f | ";
 		}
-		Message.sendMessage(bp, MSG.COMMAND_ADMIN_CMDLIST);
+		Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_CMDLIST);
 		for(String lin : lines)
 			Message.sendMessage(bp, lin);
 		
@@ -49,7 +49,7 @@ public class CmdlistSub extends Subcommand {
 				lines[l++] = "&c" + s[i].getLabel();
 			else lines[l] = "&c" + s[i].getLabel() + "&f | ";
 		}
-		Message.sendConsole(MSG.COMMAND_ADMIN_CMDLIST);
+		Message.sendConsole(MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_CMDLIST);
 		for(String lin : lines)
 			Message.sendConsole(lin);
 	}
