@@ -94,5 +94,11 @@
 			<version>2.3.7-SNAPSHOT</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- OTP Library  -->
+		<dependency>
+			<groupId>com.j256.two-factor-auth</groupId>
+			<artifactId>two-factor-auth</artifactId>
+			<version>1.0</version>
+		</dependency>
 	</dependencies>
 </project>
