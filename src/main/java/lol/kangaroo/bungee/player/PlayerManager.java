@@ -197,6 +197,8 @@ public class PlayerManager {
 		newVariables.put(PlayerVariable.NICKNAME, con.getName());
 		newVariables.put(PlayerVariable.VOTE_LAST, new Timestamp(0));
 		newVariables.put(PlayerVariable.VOTE_STREAK, 0);
+		newVariables.put(PlayerVariable.RANK_EXPIRETIME, null);
+		newVariables.put(PlayerVariable.RANK_EXPIRETO, Rank.PLAYER);
 		
 		DatabasePlayer dp = getDatabasePlayer(uuid);
 		dp.setAllVariablesMap(newVariables);
