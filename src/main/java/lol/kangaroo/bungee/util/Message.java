@@ -118,6 +118,48 @@ public class Message {
 	}
 	
 	/**
+	 * Send the prefixed string message.
+	 * @return whether the message was sent.
+	 */
+	public static boolean sendPrefixedMessage(BasePlayer p, MSG prefix, String msg, Object... args) {
+		ProxiedPlayer pp = proxy.getPlayer(p.getUniqueId());
+		if(pp == null) return false;
+		String m = String.format(msg, args);
+		String[] ms = m.split("\n");
+		TextComponent prefixtc = new TextComponent(TextComponent.fromLegacyText(prefix.getMessage(p, args)));
+		TextComponent tc = new TextComponent(TextComponent.fromLegacyText(ms[0]));
+		prefixtc.addExtra(tc);
+		pp.sendMessage(prefixtc);
+		if(ms.length > 1)
+			for(int i = 1; i < ms.length; i++) {
+				TextComponent mc = new TextComponent(TextComponent.fromLegacyText(ms[i]));
+				pp.sendMessage(mc);
+			}
+		return true;
+	}
+
+	/**
+	 * Send the prefixed string message.
+	 * @return whether the message was sent.
+	 */
+	public static boolean sendPrefixedMessage(ProxiedPlayer pp, MSG prefix, String msg, Object... args) {
+		CachedPlayer cp = pm.getCachedPlayer(pp.getUniqueId());
+		if(cp == null) return false;
+		String m = String.format(msg, args);
+		String[] ms = m.split("\n");
+		TextComponent prefixtc = new TextComponent(TextComponent.fromLegacyText(prefix.getMessage(cp, args)));
+		TextComponent tc = new TextComponent(TextComponent.fromLegacyText(ms[0]));
+		prefixtc.addExtra(tc);
+		pp.sendMessage(prefixtc);
+		if(ms.length > 1)
+			for(int i = 1; i < ms.length; i++) {
+				TextComponent mc = new TextComponent(TextComponent.fromLegacyText(ms[i]));
+				pp.sendMessage(mc);
+			}
+		return true;
+	}
+	
+	/**
 	 * Sends the given @MSG with the prefix to the console.
 	 * @param prefix the Prefix for the message
 	 * @param msg the main message
