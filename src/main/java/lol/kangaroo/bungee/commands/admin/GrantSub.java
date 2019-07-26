@@ -18,6 +18,7 @@ import lol.kangaroo.bungee.util.DurationFormat;
 import lol.kangaroo.bungee.util.DurationStringCalc;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
+import lol.kangaroo.common.permissions.PermissionManager;
 import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
@@ -131,6 +132,7 @@ public class GrantSub extends Subcommand {
 			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.ADMIN_AUTH_FAIL);
 			return;
 		}
+		grantAsync(bp, target, otpCode, timeStr, note, type, typeValue, pVal);
 	}
 	
 	private void grantAsync(final BasePlayer bp, final CachedPlayer target, final int otpCode, final String timeStr, final String note, final byte type, final String typeValue, final boolean pVal) {
@@ -161,10 +163,7 @@ public class GrantSub extends Subcommand {
 				typeValFormatted = rank.getColor() + rank.getName();
 				PlayerUpdateCache c = target.createUpdateCache();
 				target.setVariableInUpdate(c, PlayerVariable.RANK, rank);
-				if(permanent) 
-					target.setVariableInUpdate(c, PlayerVariable.RANK_EXPIRETIME, null);
-				else
-					target.setVariableInUpdate(c, PlayerVariable.RANK_EXPIRETIME, Timestamp.from(end));
+				target.setVariableInUpdate(c, PlayerVariable.RANK_EXPIRETIME, (permanent ? null : Timestamp.from(end)));
 				c.pushUpdates();
 				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_SUCCESS, 
 						pm.getRankManager().getPrefixDirect(target.getUniqueId()) + target.getVariable(PlayerVariable.USERNAME), 
@@ -174,7 +173,8 @@ public class GrantSub extends Subcommand {
 				Message.sendMessage(target, MSG.PLAYER_GRANTEDRANK, typeValFormatted, dur);
 			} else if(type == 2) {
 				typeValFormatted = pVal ? (ChatColor.GREEN + "+" + typeValue.toLowerCase()) : (ChatColor.RED + "-" + typeValue.toLowerCase());
-				// TODO add expiring permission and add check for expired ranks/perms
+				PermissionManager prm = pm.getPermissionManager();
+				prm.setPlayerPermission(target, typeValue, pVal, (permanent ? null : Timestamp.from(end)));
 				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_SUCCESS, 
 						pm.getRankManager().getPrefixDirect(target.getUniqueId()) + target.getVariable(PlayerVariable.USERNAME), 
 						typeValFormatted, 
