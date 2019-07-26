@@ -1,5 +1,7 @@
 package lol.kangaroo.bungee.permissions;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 import lol.kangaroo.bungee.player.DatabasePlayer;
@@ -70,6 +72,7 @@ public class RankManager implements IRankManager {
 	@Override
 	public Rank getRank(BasePlayer pl, boolean useModifiedRank) {
 		//TODO implement rank modifications
+		if(pl == null) return Rank.PLAYER;
 		return (Rank) pl.getVariable(PlayerVariable.RANK);
 	}
 
@@ -77,8 +80,40 @@ public class RankManager implements IRankManager {
 	public Rank getRankDirect(UUID uuid, boolean useModifiedRank) {
 		//TODO implement rank modifications
 		DatabasePlayer dp = pm.getDatabasePlayer(uuid);
-		if(dp == null) return null;
+		if(dp == null) return Rank.PLAYER;
 		return (Rank) dp.getVariable(PlayerVariable.RANK);
+	}
+
+	@Override
+	public Instant getRankExpiry(UUID uuid) {
+		CachedPlayer cp = pm.getCachedPlayer(uuid);
+		if(cp == null) return null;
+		Timestamp expiry = (Timestamp) cp.getVariable(PlayerVariable.RANK_EXPIRETIME);
+		if(expiry.getTime() <= 0) return null;
+		return expiry.toInstant();
+	}
+
+	@Override
+	public Instant getRankExpiry(BasePlayer pl) {
+		if(pl == null) return null;
+		Timestamp expiry = (Timestamp) pl.getVariable(PlayerVariable.RANK_EXPIRETIME);
+		if(expiry.getTime() <= 0) return null;
+		return expiry.toInstant();
+	}
+
+	@Override
+	public Rank getRankExprireTo(UUID uuid) {
+		CachedPlayer cp = pm.getCachedPlayer(uuid);
+		if(cp == null) return Rank.PLAYER;
+		Rank expireTo = (Rank) cp.getVariable(PlayerVariable.RANK_EXPIRETO);
+		return expireTo;
+	}
+
+	@Override
+	public Rank getRankExprireTo(BasePlayer pl) {
+		if(pl == null) return Rank.PLAYER;
+		Rank expireTo = (Rank) pl.getVariable(PlayerVariable.RANK_EXPIRETO);
+		return expireTo;
 	}
 
 }
