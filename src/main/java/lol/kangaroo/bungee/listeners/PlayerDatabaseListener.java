@@ -4,7 +4,7 @@ import java.net.InetAddress;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
 import lol.kangaroo.bungee.KLBungeePlugin;
@@ -79,7 +79,7 @@ public class PlayerDatabaseListener implements Listener {
 				cp.setVariableInUpdate(u, PlayerVariable.IP, c.getAddress().getAddress());
 				hu.addIp(c.getAddress().getAddress(), System.currentTimeMillis());
 			}
-			LocalDateTime lastJoin = LocalDateTime.ofInstant(Instant.ofEpochMilli(ts.getTime()), ZoneId.of("UTC"));
+			LocalDateTime lastJoin = LocalDateTime.ofInstant(Instant.ofEpochMilli(ts.getTime()), TimeZone.getDefault().toZoneId());
 			LocalDateTime thisJoin = LocalDateTime.now();
 			if(lastJoin.getDayOfMonth() != thisJoin.getDayOfMonth()
 					|| lastJoin.getMonthValue() != thisJoin.getMonthValue()
