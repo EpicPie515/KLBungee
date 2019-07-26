@@ -71,7 +71,7 @@ public class DatabaseInitializer {
 		 *  Primary Key - (UUID + PERM)
 		 */
 		db.update("CREATE TABLE IF NOT EXISTS `player_perms` "
-				+ "(`UUID` CHAR(36), `PERM` VARCHAR(255), `VALUE` BOOLEAN, "
+				+ "(`UUID` CHAR(36), `PERM` VARCHAR(255), `VALUE` BOOLEAN, `EXPIREON` TIMESTAMP NULL DEFAULT NULL, "
 				+ "PRIMARY KEY (`UUID`, `PERM`));");
 		
 		/** NETWORK_MONEY - Network-Wide Money
