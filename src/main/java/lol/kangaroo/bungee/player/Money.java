@@ -144,7 +144,7 @@ public class Money {
 				Matcher m = reasonPattern.matcher(mreason);
 				if(m.matches()) {
 					if(m.group(1).equals("C")) multiplierMessage = MSG.color("&7(&b" + m.group(2) + "&7)");
-					else if(m.group(1).equals("L")) multiplierMessage = new MSG(m.group(2)).getMessage(cp);
+					else if(m.group(1).equals("L")) multiplierMessage = MSG.color("&7(&b" + new MSG(m.group(2)).getMessage(cp) + "&7)");
 				}
 			}
 		}
