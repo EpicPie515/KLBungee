@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -28,6 +29,7 @@ import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerHistory;
 import lol.kangaroo.common.player.PlayerHistory.HistoryUpdateCache;
+import lol.kangaroo.common.player.PlayerUpdateCache;
 import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.player.punish.Ban;
 import lol.kangaroo.common.player.punish.Blacklist;
@@ -83,6 +85,14 @@ public class PlayerManager {
 	 */
 	public PunishManager getPunishManager() {
 		return pum;
+	}
+	
+	public PlayerCacheManager getPlayerCacheManager() {
+		return pcm;
+	}
+	
+	public PermissionManager getPermissionManager() {
+		return prm;
 	}
 	
 	/**
@@ -795,6 +805,39 @@ public class PlayerManager {
 		if(pp != null)
 			for(Entry<String, Boolean> perm : perms.entrySet())
 				pp.setPermission(perm.getKey(), perm.getValue());
+	}
+	
+	/**
+	 * Check for expired permissions for online player, and remove them.
+	 */
+	public void removeExpiredPermissions(BasePlayer bp) {
+		Set<String> exp = prm.getExpiredPlayerPermissions(bp);
+		ProxiedPlayer pp = proxy.getPlayer(bp.getUniqueId());
+		prm.removePlayerPermissions(bp, exp);
+		if(pp != null) {
+			for(String perm : exp) {
+				pp.setPermission(perm, false);
+				Message.sendMessage(bp, MSG.PLAYER_REMOVEDPERM, perm.toUpperCase());
+			}
+		}
+	}
+	
+	/**
+	 * Check for expired rank for online player.
+	 * If expired, will be demoted to their DEMOTETO rank.
+	 * @return true if expired+demoted, false if their rank is still valid.
+	 */
+	public boolean demoteIfRankExpired(CachedPlayer bp) {
+		Rank cur = rm.getRank(bp, false);
+		Instant exp = rm.getRankExpiry(bp);
+		if(exp == null || exp.isAfter(Instant.now())) return false;
+		Rank demote = rm.getRankExprireTo(bp);
+		PlayerUpdateCache u = bp.createUpdateCache();
+		bp.setVariableInUpdate(u, PlayerVariable.RANK, demote);
+		bp.setVariableInUpdate(u, PlayerVariable.RANK_EXPIRETIME, new Timestamp(0));
+		u.pushUpdates();
+		Message.sendMessage(bp, MSG.PLAYER_REMOVEDRANK, cur.getColor() + cur.getName(), MSG.PLAYER_REMOVEDEXPIRED.getMessage(bp));
+		return true;
 	}
 	
 }
