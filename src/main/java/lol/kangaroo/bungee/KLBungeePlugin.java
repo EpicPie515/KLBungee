@@ -24,6 +24,7 @@ import lol.kangaroo.bungee.listeners.PermissionListener;
 import lol.kangaroo.bungee.listeners.PlayerDatabaseListener;
 import lol.kangaroo.bungee.listeners.VoteListener;
 import lol.kangaroo.bungee.permissions.RankManager;
+import lol.kangaroo.bungee.permissions.RankPermissionExpiry;
 import lol.kangaroo.bungee.player.Money;
 import lol.kangaroo.bungee.player.PlayerCacheManager;
 import lol.kangaroo.bungee.player.PlayerManager;
@@ -69,6 +70,9 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	private BlacklistListener bll;
 	private MuteListener mul;
 	
+	// Loop Tasks
+	private RankPermissionExpiry expireLoopTask;
+	
 	@Override
 	public void onEnable() {
 		Locale.setDefault(new Locale("en", "US"));
@@ -77,6 +81,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		init();
 		setupLanguages();
 		registerListeners();
+		registerLoopTasks();
 		
 	}
 	
@@ -152,6 +157,12 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		pluginManager.registerListener(this, bal = new BanListener(this));
 		pluginManager.registerListener(this, bll = new BlacklistListener(this));
 		pluginManager.registerListener(this, mul = new MuteListener(this));
+	}
+	
+	private void registerLoopTasks() {
+		expireLoopTask = new RankPermissionExpiry(this);
+		
+		expireLoopTask.startLoopTask();
 	}
 	
 	public ConfigManager getConfigManager() {
