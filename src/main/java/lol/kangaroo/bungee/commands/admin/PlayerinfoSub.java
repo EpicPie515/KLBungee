@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.Locale;
 import java.util.Set;
 
@@ -17,7 +18,6 @@ import lol.kangaroo.bungee.player.PlayerLevel;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.player.PlayerVoteStreak;
 import lol.kangaroo.bungee.player.punish.PunishManager;
-import lol.kangaroo.bungee.util.DurationFormat;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
 import lol.kangaroo.common.permissions.Rank;
@@ -28,6 +28,7 @@ import lol.kangaroo.common.player.punish.Ban;
 import lol.kangaroo.common.player.punish.Blacklist;
 import lol.kangaroo.common.player.punish.Mute;
 import lol.kangaroo.common.player.punish.Punishment;
+import lol.kangaroo.common.util.DurationFormat;
 import lol.kangaroo.common.util.I18N;
 import lol.kangaroo.common.util.MSG;
 import lol.kangaroo.common.util.ServerNameFormat;
@@ -44,18 +45,19 @@ public class PlayerinfoSub extends Subcommand {
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
 		ThreadManager.async(() -> {
 			if(args.length == 0) {
-				Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_USAGE);
+				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_PLAYERINFO_USAGE);
 				return;
 			}
 			CachedPlayer cp = pm.getCachedPlayer(pm.getFromAny(args[0]));
 			if(cp == null) {
-				Message.sendMessage(bp, MSG.PLAYER_NOTFOUND);
+				Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.PLAYER_NOTFOUND);
 				return;
 			}
 			RankManager rm = pm.getRankManager();
 			PunishManager pum = pm.getPunishManager();
 			Rank r = rm.getRank(cp, false); 
 			String lastSeen = "";
+			Locale loc = I18N.getPlayerLocale(bp);
 			ProxiedPlayer pp = proxy.getPlayer(cp.getUniqueId());
 			boolean onl = false;
 			if(pp != null)
@@ -63,7 +65,7 @@ public class PlayerinfoSub extends Subcommand {
 			Instant lq = ((Timestamp) cp.getVariable(PlayerVariable.LASTQUIT)).toInstant();
 			Instant now = Instant.now();
 			Duration dur = Duration.between(lq, now);
-			lastSeen = DurationFormat.getFormattedDuration(dur);
+			lastSeen = DurationFormat.getFormattedDuration(dur, loc, true);
 			Set<Punishment> puns = pum.getActivePunishments(cp.getUniqueId());
 			Punishment mostActivePunishment = null;
 			if(!puns.isEmpty()) {
@@ -117,32 +119,34 @@ public class PlayerinfoSub extends Subcommand {
 				}
 			}
 			MSG status = null;
-			if(mostActivePunishment.isPermanent()) {
-				if(mostActivePunishment instanceof Blacklist)
-					status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_BLACKLISTED;
-				else if(mostActivePunishment instanceof Ban)
-					status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_PERMBANNED;
-				else if(mostActivePunishment instanceof Mute)
-					status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_PERMMUTED;
-			} else {
-				if(mostActivePunishment instanceof Ban)
-					status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_TEMPBANNED;
-				else if(mostActivePunishment instanceof Mute)
-					status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_TEMPMUTED;
+			if(mostActivePunishment != null) {
+				if(mostActivePunishment.isPermanent()) {
+					if(mostActivePunishment instanceof Blacklist)
+						status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_BLACKLISTED;
+					else if(mostActivePunishment instanceof Ban)
+						status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_PERMBANNED;
+					else if(mostActivePunishment instanceof Mute)
+						status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_PERMMUTED;
+				} else {
+					if(mostActivePunishment instanceof Ban)
+						status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_TEMPBANNED;
+					else if(mostActivePunishment instanceof Mute)
+						status = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_TEMPMUTED;
+				}
 			}
-			CachedPlayer auth = pm.getCachedPlayer(mostActivePunishment.getAuthor());
-			String author = rm.getPrefix(auth) + auth.getVariable(PlayerVariable.USERNAME);
-			LocalDateTime punDate = new Timestamp(mostActivePunishment.getTimestamp()).toLocalDateTime();
-			Duration punDur = Duration.ofMillis(mostActivePunishment.getDuration());
-			String timeRemaining = DurationFormat.getFormattedDuration(Duration.between(Instant.now(), punDate.plus(punDur)));
 			
 			LocalDateTime ldt = PlayerVoteStreak.getLastVote(cp).toLocalDateTime();
+			
 			boolean warn = false;
 			String vanStatus = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_VISIBLE.getMessage(Locale.getDefault());
-			if(VanishAPI.isInvisibleOffline(cp.getUniqueId())) {
-				warn = true;
-				vanStatus = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_VANISHED.getMessage(Locale.getDefault()); 
+			// TODO add the actual vanish plugin to server, then remove this null check
+			if(proxy.getPluginManager().getPlugin("PremiumVanish") != null) {
+				if(VanishAPI.isInvisibleOffline(cp.getUniqueId())) {
+					warn = true;
+					vanStatus = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_VANISHED.getMessage(Locale.getDefault()); 
+				}
 			}
+			
 			Instant i = ((Timestamp) cp.getVariable(PlayerVariable.FIRSTJOIN)).toInstant();
 			Duration fj = Duration.between(i, Instant.now());
 			
@@ -158,18 +162,50 @@ public class PlayerinfoSub extends Subcommand {
 			
 			long bal = Money.getBalance(cp);
 			
-			String lang = I18N.getPlayerLocale(cp).getDisplayName();
+			String lang = I18N.getPlayerLocale(cp).getDisplayLanguage();
 			
-			if(onl)
-				if(warn)
-					lastSeen = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_ONLINE_WARNING.getMessage(Locale.getDefault()) + "&7(&b" + ServerNameFormat.format(pp.getServer().getInfo().getName()) + ")";
-				else
-					lastSeen = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_ONLINE.getMessage(Locale.getDefault()) + "&7(&b" + ServerNameFormat.format(pp.getServer().getInfo().getName()) + ")";
+			if(onl) {
+				if(warn) {
+					lastSeen = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_ONLINE_WARNING.getMessage(Locale.getDefault(), 
+							ServerNameFormat.format(pp.getServer().getInfo().getName()));
+				} else {
+					lastSeen = MSG.COMMAND_ADMIN_PLAYERINFO_STATUS_ONLINE.getMessage(Locale.getDefault(), 
+							ServerNameFormat.format(pp.getServer().getInfo().getName()));
+				}
+			}
 			
-			Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO, rm.getPrefix(cp) + cp.getVariable(PlayerVariable.USERNAME), r.getColor() + r.getName(), lastSeen);
-			Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_PUNISHED, status.getMessage(Locale.getDefault()), mostActivePunishment.getReason(), author, punDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-			if(!mostActivePunishment.isPermanent()) Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_TEMPPUNISHED, DurationFormat.getFormattedDuration(punDur), timeRemaining);
-			Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_DATA, PlayerVoteStreak.getStreak(cp), ldt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), vanStatus, nicked, DurationFormat.getFormattedDuration(fj), levelStr, curExp, reqExp, bal, lang);
+			Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_PLAYERINFO, 
+					rm.getPrefix(cp) + cp.getVariable(PlayerVariable.USERNAME), 
+					r.getColor() + r.getName(), 
+					lastSeen);
+			if(mostActivePunishment != null) {
+				CachedPlayer auth = pm.getCachedPlayer(mostActivePunishment.getAuthor());
+				String author = rm.getPrefix(auth) + auth.getVariable(PlayerVariable.USERNAME);
+				LocalDateTime punDate = new Timestamp(mostActivePunishment.getTimestamp()).toLocalDateTime();
+				Duration punDur = Duration.ofMillis(mostActivePunishment.getDuration());
+				String timeRemaining = DurationFormat.getFormattedDuration(Duration.between(Instant.now(), punDate.plus(punDur)), loc, false);
+				
+				Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_PUNISHED, 
+						status.getMessage(Locale.getDefault()), 
+						mostActivePunishment.getReason(), 
+						author, 
+						punDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+				if(!mostActivePunishment.isPermanent())
+					Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_TEMPPUNISHED, 
+							DurationFormat.getFormattedDuration(punDur, loc, false), 
+							timeRemaining);
+			}
+			Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_DATA, 
+					PlayerVoteStreak.getStreak(cp), 
+					ldt.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.SHORT)), 
+					vanStatus, 
+					nicked, 
+					DurationFormat.getFormattedDuration(fj, loc, true), 
+					levelStr, 
+					curExp, 
+					reqExp, 
+					bal, 
+					lang);
 		});
 	}
 
