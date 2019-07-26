@@ -17,6 +17,8 @@ public class LinksCommand extends CommandExecutor {
 		super(pm, proxy, "links", Rank.PLAYER.getPerm(), "info", "ts", "discord", "website", "store", "vote");
 	}
 
+	// TODO make the links command actual stuff
+	
 	@Override
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
 		if(args.length == 0) {
