@@ -29,9 +29,10 @@ public class CmdlistSub extends Subcommand {
 		int wi = 0;
 		for(int i = 0; i < s.length; i++) {
 			if(sender.hasPermission(s[i].getPermission()))
-				if(++wi % 5 == 0)
-					lines[l++] = "&c" + s[i].getLabel();
-				else lines[l] = "&c" + s[i].getLabel() + "&f | ";
+				if(++wi % 5 == 0) {
+					lines[l] = "&c" + s[i].getLabel();
+					l++;
+				} else lines[l] = "&c" + s[i].getLabel() + "&f | ";
 		}
 		Message.sendMessage(bp, MSG.COMMAND_ADMIN_CMDLIST);
 		for(String lin : lines)
@@ -45,9 +46,10 @@ public class CmdlistSub extends Subcommand {
 		Subcommand[] s = subs.toArray(new Subcommand[subs.size()]);
 		int l = 0;
 		for(int i = 0; i < s.length; i++) {
-			if(l % 5 == 0)
-				lines[l++] = "&c" + s[i].getLabel();
-			else lines[l] = "&c" + s[i].getLabel() + "&f | ";
+			if(l % 5 == 0) {
+				lines[l] = "&c" + s[i].getLabel();
+				l++;
+			} else lines[l] = "&c" + s[i].getLabel() + "&f | ";
 		}
 		Message.sendConsole(MSG.COMMAND_ADMIN_CMDLIST);
 		for(String lin : lines)
