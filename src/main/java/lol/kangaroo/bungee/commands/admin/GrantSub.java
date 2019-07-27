@@ -14,8 +14,6 @@ import lol.kangaroo.bungee.commands.Subcommand;
 import lol.kangaroo.bungee.database.Auth;
 import lol.kangaroo.bungee.database.Logs;
 import lol.kangaroo.bungee.player.PlayerManager;
-import lol.kangaroo.bungee.util.DurationFormat;
-import lol.kangaroo.bungee.util.DurationStringCalc;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
 import lol.kangaroo.common.permissions.PermissionManager;
@@ -24,6 +22,9 @@ import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerUpdateCache;
 import lol.kangaroo.common.player.PlayerVariable;
+import lol.kangaroo.common.util.DurationFormat;
+import lol.kangaroo.common.util.DurationStringCalc;
+import lol.kangaroo.common.util.I18N;
 import lol.kangaroo.common.util.MSG;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ProxyServer;
@@ -157,7 +158,7 @@ public class GrantSub extends Subcommand {
 			boolean permanent = durNum == -1;
 			Instant end = Instant.now().plusMillis(durNum);
 			String typeValFormatted = null;
-			String dur = DurationFormat.getFormattedDuration(Duration.between(Instant.now(), end));
+			String dur = DurationFormat.getFormattedDuration(Duration.between(Instant.now(), end), I18N.getPlayerLocale(bp), false);
 			if(type == 1) {
 				Rank rank = Rank.getByName(typeValue);
 				typeValFormatted = rank.getColor() + rank.getName();
