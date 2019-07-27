@@ -22,21 +22,21 @@ public class TestvoteSub extends Subcommand {
 	@Override
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
 		if(args.length == 0) {
-			Message.sendMessage(bp, MSG.COMMAND_ADMIN_TESTVOTE_USAGE);
+			Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_TESTVOTE_USAGE);
 			return;
 		}
 		proxy.getPluginManager().callEvent(new VotifierEvent(new Vote("Manual Vote", args[0], "", "")));
-		Message.sendMessage(bp, MSG.COMMAND_ADMIN_TESTVOTE, args[0]);
+		Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_TESTVOTE, args[0]);
 	}
 
 	@Override
 	public void executeConsole(String label, String[] args) {
 		if(args.length == 0) {
-			Message.sendConsole(MSG.COMMAND_ADMIN_TESTVOTE_USAGE);
+			Message.sendConsole(MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_TESTVOTE_USAGE);
 			return;
 		}
 		proxy.getPluginManager().callEvent(new VotifierEvent(new Vote("Manual Vote", args[0], "", "")));
-		Message.sendConsole(MSG.COMMAND_ADMIN_TESTVOTE, args[0]);
+		Message.sendConsole(MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_TESTVOTE, args[0]);
 	}
 	
 	
