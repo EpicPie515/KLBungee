@@ -4,6 +4,8 @@ import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Locale;
 
+import lol.kangaroo.bungee.commands.AdminCommand;
+import lol.kangaroo.bungee.commands.CachedumpCommand;
 import lol.kangaroo.bungee.commands.CommandExecutor;
 import lol.kangaroo.bungee.commands.player.LinksCommand;
 import lol.kangaroo.bungee.commands.player.PingCommand;
@@ -101,11 +103,11 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		pcm = new PlayerCacheManager(this, pullUpdateInterval, flushInterval);
 		pum = new PunishManager(db);
 		prm = new PermissionManager(db);
-		pm = new PlayerManager(db, getProxy(), this, pvm, pcm, pum, prm);
+		rm = new RankManager(pm);
+		pm = new PlayerManager(db, getProxy(), this, pvm, pcm, pum, prm, rm);
 		PlayerHistory.init(db);
 		
 		PluginMessage.init(this);
-		rm = new RankManager(pm);
 		
 		Money.init(pm);
 		
@@ -117,6 +119,8 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		CommandExecutor.registerCommand(new UnmuteCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new LinksCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new PingCommand(pm, getProxy()));
+		CommandExecutor.registerCommand(new AdminCommand(pm, getProxy()));
+		CommandExecutor.registerCommand(new CachedumpCommand(pm, getProxy(), this));
 		
 		
 		pcm.scheduleUpdateTasks(pm);
@@ -168,6 +172,10 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	
 	public PlayerManager getPlayerManager() {
 		return pm;
+	}
+	
+	public PlayerCacheManager getPlayerCacheManager() {
+		return pcm;
 	}
 	
 	public PunishManager getPunishManager() {
