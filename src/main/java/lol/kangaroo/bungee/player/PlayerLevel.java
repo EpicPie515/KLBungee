@@ -96,7 +96,7 @@ public enum PlayerLevel {
 		SYMBOL = conf.getConfig("settings").getString("xp-symbol");
 	}
 	
-	public static String SYMBOL;
+	public static String SYMBOL = "\u272F";
 	
 	public static PlayerLevel getByName(String name) {
 		for(PlayerLevel l : values()) {
@@ -151,24 +151,39 @@ public enum PlayerLevel {
 				Matcher m = reasonPattern.matcher(mreason);
 				if(m.matches()) {
 					if(m.group(1).equals("C")) multiplierMessage = MSG.color("&7(&b" + m.group(2) + "&7)");
-					else if(m.group(1).equals("L")) multiplierMessage = new MSG(m.group(2)).getMessage(cp);
+					else if(m.group(1).equals("L")) multiplierMessage = MSG.color("&7(&b" + new MSG(m.group(2)).getMessage(cp) + "&7)");
 				}
 			}
 		}
 		int level = getPlayerLevel(cp, false);
+		PlayerLevel ol = getLevel(level);
 		long max = getRequiredExperience(level+1);
 		long cur = getExperience(cp);
 		PlayerUpdateCache u = cp.createUpdateCache();
-		if(cur + amount >= max) {
+		boolean levelUp = false;
+		long finalAmount = amount;
+		if(cur + amount >= max) levelUp = true;
+		while(cur + amount >= max) {
+			level++;
 			amount = (cur + amount) - max;
-			cp.setVariableInUpdate(u, PlayerVariable.LEVEL, level + 1);
+			cur = 0;
+			max = getRequiredExperience(level+1);
+		}
+		if(levelUp) {
+			cp.setVariableInUpdate(u, PlayerVariable.LEVEL, level);
 			cp.setVariableInUpdate(u, PlayerVariable.EXPERIENCE, amount);
-			Message.sendMessage(cp, MSG.EXP_ADDED, amount, multiplierMessage);
-			PlayerLevel l = getLevel(level + 1);
-			Message.sendMessage(cp, MSG.EXP_LEVELUP, l.getColor() + l.getName(), level+1, SYMBOL);
+			PlayerLevel l = getLevel(level);
+			if(sendMessage) {
+				Message.sendMessage(cp, MSG.EXP_ADDED, finalAmount, multiplierMessage);
+				if(l.equals(ol))
+					Message.sendMessage(cp, MSG.EXP_LEVELGAINED, l.getColor(), level, l.getName());
+				else
+					Message.sendMessage(cp, MSG.EXP_LEVELUP, l.getColor(), l.getName(), level, SYMBOL);
+			}
 		} else {
 			cp.setVariableInUpdate(u, PlayerVariable.EXPERIENCE, cur + amount);
-			Message.sendMessage(cp, MSG.EXP_ADDED, amount, multiplierMessage);
+			if(sendMessage)
+				Message.sendMessage(cp, MSG.EXP_ADDED, finalAmount, multiplierMessage);
 		}
 		u.pushUpdates();
 	}
