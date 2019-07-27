@@ -10,6 +10,8 @@ import lol.kangaroo.common.player.PlayerVariable;
 public class PlayerVoteStreak {
 	
 	public static int getStreak(BasePlayer p) {
+		// TODO debug
+		if(p == null) System.out.println("WHAT THE FUCK");
 		return (int) p.getVariable(PlayerVariable.VOTE_STREAK);
 	}
 	
