@@ -58,7 +58,7 @@ public class PlayerManager {
 	private PunishManager pum;
 	private PermissionManager prm;
 	
-	public PlayerManager(DatabaseManager db, ProxyServer proxy, KLBungeePlugin pl, PlayerVariableManager pvm, PlayerCacheManager pcm, PunishManager pum, PermissionManager prm) {
+	public PlayerManager(DatabaseManager db, ProxyServer proxy, KLBungeePlugin pl, PlayerVariableManager pvm, PlayerCacheManager pcm, PunishManager pum, PermissionManager prm, RankManager rm) {
 		this.db = db;
 		this.pl = pl;
 		this.proxy = proxy;
@@ -66,7 +66,7 @@ public class PlayerManager {
 		this.pcm = pcm;
 		this.pum = pum;
 		this.prm = prm;
-		this.rm = pl.getRankManager();
+		this.rm = rm;
 	}
 	
 	/**
