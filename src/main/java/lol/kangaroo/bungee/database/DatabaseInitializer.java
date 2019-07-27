@@ -71,7 +71,7 @@ public class DatabaseInitializer {
 		 *  Primary Key - (UUID + PERM)
 		 */
 		db.update("CREATE TABLE IF NOT EXISTS `player_perms` "
-				+ "(`UUID` CHAR(36), `PERM` VARCHAR(255), `VALUE` BOOLEAN, "
+				+ "(`UUID` CHAR(36), `PERM` VARCHAR(255), `VALUE` BOOLEAN, `EXPIREON` TIMESTAMP NULL DEFAULT NULL, "
 				+ "PRIMARY KEY (`UUID`, `PERM`));");
 		
 		/** NETWORK_MONEY - Network-Wide Money
@@ -79,6 +79,12 @@ public class DatabaseInitializer {
 		 */
 		db.update("CREATE TABLE IF NOT EXISTS `network_money` "
 				+ "(`UUID` CHAR(36), `BALANCE` DECIMAL, PRIMARY KEY (`UUID`));");
+		
+		/** AUTH_SECRETS - Authenticator Secrets
+		 *  Primary Key - (UUID)
+		 */
+		db.update("CREATE TABLE IF NOT EXISTS `auth_secrets` "
+				+ "(`UUID` CHAR(36), `SECRET` VARCHAR(255), PRIMARY KEY (`UUID`));");
 	}
 	
 	public void createLogTables() {
@@ -127,6 +133,14 @@ public class DatabaseInitializer {
 				+ "(`UUID` CHAR(36), `TIMESTAMP` TIMESTAMP, `DURATION` BIGINT, "
 				+ "`REASON` VARCHAR(255), AUTHOR CHAR(36), `UNREASON` VARCHAR(255) DEFAULT NULL, "
 				+ "`UNTIMESTAMP` TIMESTAMP NULL DEFAULT NULL, `UNAUTHOR` CHAR(36) DEFAULT NULL, `SERVER` INT, `ACTIVE` BOOLEAN);");
+		
+		/** LOG_GRANT - Grant Logs
+		 * 	No Key
+		 */
+		db.update("CREATE TABLE IF NOT EXISTS `log_grant` "
+				+ "(`UUID` CHAR(36), `TIMESTAMP` TIMESTAMP, `AUTHOR` CHAR(36), "
+				+ "`ACTION` CHAR(1), `TYPE` CHAR(1), `TYPEVALUE` VARCHAR(255), `NOTE` VARCHAR(255), "
+				+ "`PERMVALUE` BOOLEAN NULL DEFAULT NULL)");
 	
 		/** SETTINGS - InGame-Controlled Settings
 		 *  Primary Key - (SETTING)

@@ -45,7 +45,7 @@ public class PlayerinfoSub extends Subcommand {
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
 		ThreadManager.async(() -> {
 			if(args.length == 0) {
-				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_PLAYERINFO_USAGE);
+				Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_PLAYERINFO_USAGE);
 				return;
 			}
 			CachedPlayer cp = pm.getCachedPlayer(pm.getFromAny(args[0]));
