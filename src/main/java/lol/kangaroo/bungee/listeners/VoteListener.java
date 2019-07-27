@@ -39,15 +39,16 @@ public class VoteListener implements Listener {
 			} else
 				uuid = cp.getUniqueId();
 			int streak = PlayerVoteStreak.getStreak(cp);
-			int effectiveStreak = Math.min(streak, 250);
 			Timestamp ls = PlayerVoteStreak.getLastVote(cp);
 			Timestamp now = new Timestamp(System.currentTimeMillis());
 			if(ls.toLocalDateTime().isAfter(now.toLocalDateTime().plusHours(48)))
 				streak = 0;
-			PlayerVoteStreak.setStreak(cp, streak + 1);
+			streak++;
+			int effectiveStreak = Math.min(streak, 250);
+			PlayerVoteStreak.setStreak(cp, streak);
 			PlayerVoteStreak.setLastVote(cp, now.getTime());
 			Message.sendMessage(cp, MSG.VOTE_RECEIVED, v.getServiceName(), streak);
-			Logs.Vote.addLog(v.getUsername(), uuid, System.currentTimeMillis(), v.getServiceName(), streak + 1);
+			Logs.Vote.addLog(v.getUsername(), uuid, System.currentTimeMillis(), v.getServiceName(), streak);
 			int addTo;
 			if(effectiveStreak < 20) addTo = effectiveStreak * 20;
 			else addTo = (int) Math.pow(effectiveStreak, 2);
