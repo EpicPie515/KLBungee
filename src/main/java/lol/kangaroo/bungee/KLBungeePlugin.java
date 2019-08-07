@@ -1,6 +1,5 @@
 package lol.kangaroo.bungee;
 
-import java.net.MalformedURLException;
 import java.util.List;
 import java.util.Locale;
 
@@ -16,6 +15,7 @@ import lol.kangaroo.bungee.commands.punish.UnbanCommand;
 import lol.kangaroo.bungee.commands.punish.UnblacklistCommand;
 import lol.kangaroo.bungee.commands.punish.UnmuteCommand;
 import lol.kangaroo.bungee.config.ConfigManager;
+import lol.kangaroo.bungee.database.Auth;
 import lol.kangaroo.bungee.database.DatabaseInitializer;
 import lol.kangaroo.bungee.database.Logs;
 import lol.kangaroo.bungee.listeners.AdminJoinAlertListener;
@@ -100,6 +100,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		
 		Setting.init(db);
 		Logs.init(db);
+		Auth.init(db);
 		
 		long pullUpdateInterval = settings.getLong("cacheUpdateInterval");
 		long flushInterval = settings.getLong("cacheFlushInterval");
@@ -108,8 +109,8 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		pcm = new PlayerCacheManager(this, pullUpdateInterval, flushInterval);
 		pum = new PunishManager(db);
 		prm = new PermissionManager(db);
+		pm = new PlayerManager(db, getProxy(), this, pvm, pcm, pum, prm);
 		rm = new RankManager(pm);
-		pm = new PlayerManager(db, getProxy(), this, pvm, pcm, pum, prm, rm);
 		PlayerHistory.init(db);
 		
 		PluginMessage.init(this);
@@ -141,12 +142,6 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		}
 			
 		MSG.init(i18n = new I18N(locales, this.getDataFolder(), this.getClass().getProtectionDomain().getCodeSource().getLocation()));
-		System.out.println(this.getClass().getProtectionDomain().getCodeSource().getLocation());
-		try {
-			System.out.println(this.getDataFolder().toURI().toURL());
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
 	}
 	
 	private void registerListeners() {

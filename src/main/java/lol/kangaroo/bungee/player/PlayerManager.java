@@ -51,8 +51,6 @@ public class PlayerManager {
 	private ProxyServer proxy;
 	private KLBungeePlugin pl;
 	
-	private RankManager rm;
-	
 	private PlayerVariableManager pvm;
 	
 	private PlayerCacheManager pcm;
@@ -60,7 +58,9 @@ public class PlayerManager {
 	private PunishManager pum;
 	private PermissionManager prm;
 	
-	public PlayerManager(DatabaseManager db, ProxyServer proxy, KLBungeePlugin pl, PlayerVariableManager pvm, PlayerCacheManager pcm, PunishManager pum, PermissionManager prm, RankManager rm) {
+	public Set<UUID> unbannedJoining = new HashSet<>();
+	
+	public PlayerManager(DatabaseManager db, ProxyServer proxy, KLBungeePlugin pl, PlayerVariableManager pvm, PlayerCacheManager pcm, PunishManager pum, PermissionManager prm) {
 		this.db = db;
 		this.pl = pl;
 		this.proxy = proxy;
@@ -68,7 +68,6 @@ public class PlayerManager {
 		this.pcm = pcm;
 		this.pum = pum;
 		this.prm = prm;
-		this.rm = rm;
 	}
 	
 	/**
@@ -76,7 +75,7 @@ public class PlayerManager {
 	 * @return
 	 */
 	public RankManager getRankManager() {
-		return rm;
+		return pl.getRankManager();
 	}
 	
 	/**
@@ -168,6 +167,7 @@ public class PlayerManager {
 		
 		// Else, we have to create a new CachedPlayer
 		// First by getting a DatabasePlayer, then using that to get the variables.
+		
 		DatabasePlayer dp = getDatabasePlayer(uuid);
 		
 		CachedPlayer cp = new CachedPlayer(uuid, dp.getAllVariablesMap(), dp.getPunishments(), dp.getActivePunishments(), pvm, pum);
@@ -207,7 +207,7 @@ public class PlayerManager {
 		newVariables.put(PlayerVariable.NICKNAME, con.getName());
 		newVariables.put(PlayerVariable.VOTE_LAST, new Timestamp(0));
 		newVariables.put(PlayerVariable.VOTE_STREAK, 0);
-		newVariables.put(PlayerVariable.RANK_EXPIRETIME, null);
+		newVariables.put(PlayerVariable.RANK_EXPIRETIME, new Timestamp(0));
 		newVariables.put(PlayerVariable.RANK_EXPIRETO, Rank.PLAYER);
 		
 		DatabasePlayer dp = getDatabasePlayer(uuid);
@@ -828,10 +828,10 @@ public class PlayerManager {
 	 * @return true if expired+demoted, false if their rank is still valid.
 	 */
 	public boolean demoteIfRankExpired(CachedPlayer bp) {
-		Rank cur = rm.getRank(bp, false);
-		Instant exp = rm.getRankExpiry(bp);
+		Rank cur = getRankManager().getRank(bp, false);
+		Instant exp = getRankManager().getRankExpiry(bp);
 		if(exp == null || exp.isAfter(Instant.now())) return false;
-		Rank demote = rm.getRankExprireTo(bp);
+		Rank demote = getRankManager().getRankExprireTo(bp);
 		PlayerUpdateCache u = bp.createUpdateCache();
 		bp.setVariableInUpdate(u, PlayerVariable.RANK, demote);
 		bp.setVariableInUpdate(u, PlayerVariable.RANK_EXPIRETIME, new Timestamp(0));

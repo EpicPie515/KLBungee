@@ -29,10 +29,11 @@ public class CmdlistSub extends Subcommand {
 		int wi = 0;
 		for(int i = 0; i < s.length; i++) {
 			if(sender.hasPermission(s[i].getPermission()))
-				if(++wi % 5 == 0) {
-					lines[l] = "&c" + s[i].getLabel();
+				wi++;
+				if(wi % 5 == 0) {
+					lines[l] += "&c" + s[i].getLabel();
 					l++;
-				} else lines[l] = "&c" + s[i].getLabel() + "&f | ";
+				} else lines[l] += "&c" + s[i].getLabel() + "&f | ";
 		}
 		Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_CMDLIST);
 		for(String lin : lines)
