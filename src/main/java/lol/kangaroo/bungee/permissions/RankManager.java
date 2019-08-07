@@ -89,6 +89,7 @@ public class RankManager implements IRankManager {
 		CachedPlayer cp = pm.getCachedPlayer(uuid);
 		if(cp == null) return null;
 		Timestamp expiry = (Timestamp) cp.getVariable(PlayerVariable.RANK_EXPIRETIME);
+		if(expiry == null) return null;
 		if(expiry.getTime() <= 0) return null;
 		return expiry.toInstant();
 	}
@@ -97,6 +98,7 @@ public class RankManager implements IRankManager {
 	public Instant getRankExpiry(BasePlayer pl) {
 		if(pl == null) return null;
 		Timestamp expiry = (Timestamp) pl.getVariable(PlayerVariable.RANK_EXPIRETIME);
+		if(expiry == null) return null;
 		if(expiry.getTime() <= 0) return null;
 		return expiry.toInstant();
 	}
