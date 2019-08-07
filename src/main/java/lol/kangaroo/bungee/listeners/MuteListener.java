@@ -5,11 +5,13 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
+import java.util.Set;
 
 import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.player.punish.PunishManager;
 import lol.kangaroo.bungee.util.Message;
+import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.player.punish.Mute;
@@ -34,28 +36,34 @@ public class MuteListener implements Listener {
 	
 	/**
 	 * Blocks any chats on the network.
-	 * TODO change to be sync by caching mutes
+	 * TODO do the sync thing for ban listener too, also admin ban expire alert
 	 */
 	@EventHandler
 	public void onChat(ChatEvent e) {
 		if(!(e.getSender() instanceof ProxiedPlayer)) return;
 		if(e.isCommand()) {
 			boolean blocked = false;
-			for(String s : pl.getConfigManager().getConfig("settings").getStringList("muted-blocked-commands"))
+			for(String s : pl.getConfigManager().getConfig("settings").getStringList("muted-blocked-commands")) {
 				if(e.getMessage().substring(1).equalsIgnoreCase(s)) blocked = true;
+				else if(e.getMessage().substring(e.getMessage().indexOf(":")+1).equalsIgnoreCase(s)) blocked = true;
+				// ^^ above is for namespaced commands (e.g /minecraft:tell instead of /tell)
+			}
 			if(!blocked) return;
 		}
 		ProxiedPlayer pp = (ProxiedPlayer) e.getSender();
-		pl.getProxy().getScheduler().runAsync(pl, () -> {
-			if(pum.isMuted(pp.getUniqueId())) {
-				e.setCancelled(true);
+		if(pum.isInMuteCache(pp.getUniqueId())) {
+			e.setCancelled(true);
+			pl.getProxy().getScheduler().runAsync(pl, () -> {
 				Mute mute = null;
 				for(Punishment pun : pum.getActivePunishments(pp.getUniqueId()))
 					if(pun instanceof Mute) mute = (Mute) pun;
 				if(mute == null) return;
 				if(mute.getDuration() != -1 && mute.getTimestamp() + mute.getDuration() < System.currentTimeMillis()) {
+					CachedPlayer p = pm.getCachedPlayer(pp.getUniqueId());
 					pum.executeUnMute(mute, "Mute Expired", PunishManager.ZERO_UUID);
-					e.setCancelled(false);
+					Set<BasePlayer> staff = pm.getNotifiableStaff();
+					Message.broadcast(staff, MSG.ADMIN_UNMUTEEXPIREALERT, pm.getRankManager().getPrefix(p) + p.getVariable(PlayerVariable.USERNAME));
+					Message.sendMessage(p, MSG.UNMUTEMESSAGE_EXPIRED);
 					return;
 				}
 				
@@ -92,8 +100,8 @@ public class MuteListener implements Listener {
 					Message.sendMessage(p, MSG.MUTEMESSAGE_TEMPORARY, MSG.PUNISHMESSAGE_ARE.getMessage(p), durStr, authorName, mute.getReason(), date, timeLeftStr, MSG.APPEAL_URL.getMessage(p));
 				else
 					Message.sendMessage(p, MSG.MUTEMESSAGE_PERMANENT, MSG.PUNISHMESSAGE_ARE.getMessage(p), authorName, mute.getReason(), date, MSG.APPEAL_URL.getMessage(p));
-			} 
-		});
+			});
+		}
 	}
 	
 }

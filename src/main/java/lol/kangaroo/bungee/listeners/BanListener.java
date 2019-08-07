@@ -10,6 +10,7 @@ import java.util.UUID;
 import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.player.punish.PunishManager;
+import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.player.punish.Ban;
@@ -33,26 +34,29 @@ public class BanListener implements Listener {
 	
 	/**
 	 * Blocks direct user from joining, in case IP changed.
+	 * TODO no idea why this is here, IP isn't checked on normal bans anywhere
 	 */
 	@EventHandler
 	public void onLogin(LoginEvent e) {
 		UUID uuid = e.getConnection().getUniqueId();
-		e.registerIntent(pl);
-		pl.getProxy().getScheduler().runAsync(pl, () -> {
-			if(pum.isBanned(uuid)) {
-				e.setCancelled(true);
+		if(pum.isInBanCache(uuid)) {
+			e.setCancelled(true);
+			e.registerIntent(pl);
+			pl.getProxy().getScheduler().runAsync(pl, () -> {
 				Ban ban = null;
 				for(Punishment pun : pum.getActivePunishments(uuid))
 					if(pun instanceof Ban) ban = (Ban) pun;
 				if(ban == null) return;
+				CachedPlayer p = pm.getCachedPlayer(ban.getUniqueId());
 				if(ban.getDuration() != -1 && ban.getTimestamp() + ban.getDuration() < System.currentTimeMillis()) {
 					pum.executeUnBan(ban, "Ban Expired", PunishManager.ZERO_UUID);
 					e.setCancelled(false);
 					e.completeIntent(pl);
+					Message.broadcast(pm.getNotifiableStaff(), MSG.ADMIN_UNBANEXPIREALERT, pm.getRankManager().getPrefix(p) + p.getVariable(PlayerVariable.USERNAME));
+					pm.unbannedJoining.add(uuid);
 					return;
 				}
-				
-				CachedPlayer p = pm.getCachedPlayer(ban.getUniqueId());
+
 				CachedPlayer author = pm.getCachedPlayer(ban.getAuthor());
 				// NICKNAME should only be used for at-the-moment things, such as chat
 				// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
@@ -83,9 +87,10 @@ public class BanListener implements Listener {
 				}
 				String bm = MSG.KICKMESSAGE_BAN.getMessage(p, MSG.BANSCREEN_LINE.getMessage(p), MSG.PUNISHMESSAGE_HAVEBEEN.getMessage(p), authorName, date, durStr, ban.getReason(), timeLeftStr, MSG.APPEAL_URL.getMessage(p), MSG.BANSCREEN_LINE.getMessage(p));
 				e.setCancelReason(bm);
-			}
-			e.completeIntent(pl);
-		});
+				e.completeIntent(pl);
+			});
+		}
+		
 	}
 	
 }
