@@ -86,6 +86,7 @@ public class PlayerCacheManager {
 				}
 			}
 			for(CachedPlayer cp : tr) removeFromPlayerCache(cp);
+			pm.getPunishManager().flushPunishmentCache();
 			System.gc();
 		}
 	}

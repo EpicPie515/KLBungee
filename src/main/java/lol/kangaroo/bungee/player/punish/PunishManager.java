@@ -31,6 +31,100 @@ public class PunishManager implements IPunishManager {
 		this.db = db;
 	}
 	
+	/** 
+	 * Instead of keeping the whole punishment in cache (RAM intensive at some scale) we only keep whether they have any active mute/ban
+	 * This allows to cancel the event based on cache, then get the rest of the punishment in async from the db. 
+	 */
+	private Set<UUID> mutedCache = new HashSet<>();
+	private Set<UUID> bannedCache = new HashSet<>();
+	
+	/** method for all punishment caches. Automatically determines the type of punishment and adds the target appropriately.
+	 *  WILL NOT REMOVE IF INACTIVE, could cause conflict with multiple active mutes (Which should never happen but still possible)
+	 *  @throws IllegalArgumentException if Punishment is not an instance of Mute or Ban
+	 */
+	private void addToCache(UUID uuid, Punishment pun) {
+		if(pun instanceof Mute) {
+			if(pun.isActive())
+				mutedCache.add(uuid);
+		} else if(pun instanceof Ban) {
+			if(pun.isActive())
+				bannedCache.add(uuid);
+		} else {
+			throw new IllegalArgumentException("Punishment is not instance of Mute or Ban");
+		}
+	}
+	
+	private void removeFromBanCache(UUID uuid) {
+		bannedCache.remove(uuid);
+	}
+	
+	private void removeFromMuteCache(UUID uuid) {
+		mutedCache.remove(uuid);
+	}
+	
+	public boolean isInBanCache(UUID uuid) {
+		return bannedCache.contains(uuid);
+	}
+	
+	public boolean isInMuteCache(UUID uuid) {
+		return mutedCache.contains(uuid);
+	}
+	
+	/**
+	 * returns a COPY of the ban cache.
+	 * @return
+	 */
+	public Set<UUID> getBanCache() {
+		return new HashSet<UUID>(bannedCache);
+	}
+	
+	/**
+	 * returns a COPY of the mute cache.
+	 * @return
+	 */
+	public Set<UUID> getMuteCache() {
+		return new HashSet<UUID>(mutedCache);
+	}
+	
+	/**
+	 * Called by PlayerCacheManager when the player cache is flushed.
+	 */
+	public void flushPunishmentCache() {
+		Set<UUID> bc = new HashSet<>();
+		Set<UUID> mc = new HashSet<>();
+		Map<DoubleObject<String, Object[]>, Consumer<ResultSet>> queries = new HashMap<>();
+		queries.put(new DoubleObject<>("SELECT `UUID` FROM `log_bans` WHERE `ACTIVE`=1", new Object[0]), rs -> {
+			try {
+				while(rs.next()) {
+					bc.add(UUID.fromString(rs.getString(1)));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+		queries.put(new DoubleObject<>("SELECT `UUID` FROM `log_blacklist` WHERE `ACTIVE`=1", new Object[0]), rs -> {
+			try {
+				while(rs.next()) {
+					bc.add(UUID.fromString(rs.getString(1)));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+		queries.put(new DoubleObject<>("SELECT `UUID` FROM `log_mute` WHERE `ACTIVE`=1", new Object[0]), rs -> {
+			try {
+				while(rs.next()) {
+					mc.add(UUID.fromString(rs.getString(1)));
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		});
+		db.multiQuery(queries);
+		bannedCache = new HashSet<UUID>(bc);
+		mutedCache = new HashSet<UUID>(mc);
+	}
+	
 	@Override
 	public Set<Punishment> getPunishments(UUID uuid) {
 		Set<Punishment> punishments = new HashSet<>();
@@ -457,6 +551,7 @@ public class PunishManager implements IPunishManager {
 		if(isBanned(target)) return null;
 		Ban ban = new Ban(target, System.currentTimeMillis(), duration, reason, author, null, 0, null, server, true);
 		db.update("INSERT INTO `log_ban` (`UUID`, `TIMESTAMP`, `DURATION`, `REASON`, `AUTHOR`, `SERVER`, `ACTIVE`) VALUES (?, ?, ?, ?, ?, ?, ?)", target, new Timestamp(ban.getTimestamp()), duration, reason, author, server, true);
+		addToCache(target, ban);
 		return ban;
 	}
 
@@ -468,6 +563,7 @@ public class PunishManager implements IPunishManager {
 		ban.setUnAuthor(unAuthor);
 		ban.setUnTimestamp(System.currentTimeMillis());
 		db.update("UPDATE `log_ban` SET `ACTIVE`=?, `UNREASON`=?, `UNAUTHOR`=?, `UNTIMESTAMP`=? WHERE `UUID`=? AND `ACTIVE`=TRUE", false, unReason, unAuthor, new Timestamp(ban.getUnTimestamp()), ban.getUniqueId());
+		removeFromBanCache(ban.getUniqueId());
 		return ban;
 	}
 
@@ -495,6 +591,7 @@ public class PunishManager implements IPunishManager {
 		if(isMuted(target)) return null;
 		Mute mute = new Mute(target, System.currentTimeMillis(), duration, reason, author, null, 0, null, server, true);
 		db.update("INSERT INTO `log_mute` (`UUID`, `TIMESTAMP`, `DURATION`, `REASON`, `AUTHOR`, `SERVER`, `ACTIVE`) VALUES (?, ?, ?, ?, ?, ?, ?)", target, new Timestamp(mute.getTimestamp()), duration, reason, author, server, true);
+		addToCache(target, mute);
 		return mute;
 	}
 
@@ -506,6 +603,7 @@ public class PunishManager implements IPunishManager {
 		mute.setUnAuthor(unAuthor);
 		mute.setUnTimestamp(System.currentTimeMillis());
 		db.update("UPDATE `log_mute` SET `ACTIVE`=?, `UNREASON`=?, `UNAUTHOR`=?, `UNTIMESTAMP`=? WHERE `UUID`=? AND `ACTIVE`=TRUE", false, unReason, unAuthor, new Timestamp(mute.getUnTimestamp()), mute.getUniqueId());
+		removeFromMuteCache(mute.getUniqueId());
 		return mute;
 	}
 
