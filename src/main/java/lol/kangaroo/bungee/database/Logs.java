@@ -26,7 +26,7 @@ public class Logs {
 		public static void addLog(UUID uuid, long timestamp, UUID author, char action, byte type, String typeValue, String note, Boolean permValue) {
 			db.update("INSERT INTO `log_grant` (`UUID`, `TIMESTAMP`, `AUTHOR`, `ACTION`, `TYPE`, `TYPEVALUE`, `NOTE`, `PERMVALUE`) "
 					+ "VALUES (?, ?, ?, ?, ?, ?, ?, ?)", uuid, new Timestamp(timestamp), author,
-					action, type == 1 ? 'r' : 'p', typeValue, note, permValue);
+					action + "", type == 1 ? "r" : "p", typeValue, note, permValue);
 		}
 		
 	}
