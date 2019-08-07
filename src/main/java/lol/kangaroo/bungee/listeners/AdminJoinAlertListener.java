@@ -21,12 +21,21 @@ public class AdminJoinAlertListener implements Listener {
 	public AdminJoinAlertListener(PlayerManager pm, KLBungeePlugin pl) {
 		this.pl = pl;
 		this.pm = pm;
-	}
+	}// TODO (DONE, NEEDS TESTED) this and permissionlistener need to not get cached player on join its causing 3 cachedplayers
 	
 	@EventHandler
 	public void onPostLogin(PostLoginEvent e) {
 		ProxiedPlayer p = e.getPlayer();
 		pl.getProxy().getScheduler().runAsync(pl, () -> {
+			// 500ms maximum to wait for cache
+			long timeout = System.currentTimeMillis() + 500;
+			
+			while(!pm.getPlayerCacheManager().isInPlayerCache(p.getUniqueId())) {
+				if(System.currentTimeMillis() > timeout) {
+					throw new RuntimeException("Took more than 500 ms to put player in cache.");
+				}
+			}
+			
 			CachedPlayer op = pm.getCachedPlayer(p.getUniqueId());
 			for(ProxiedPlayer pp : pl.getProxy().getPlayers()) {
 				CachedPlayer cp = pm.getCachedPlayer(pp.getUniqueId());

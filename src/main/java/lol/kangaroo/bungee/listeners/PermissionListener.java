@@ -26,6 +26,15 @@ public class PermissionListener implements Listener {
 	public void onPostLogin(PostLoginEvent e) {
 		ProxiedPlayer c = e.getPlayer();
 		proxy.getScheduler().runAsync(pl, () -> {
+			// 500ms maximum to wait for cache
+			long timeout = System.currentTimeMillis() + 500;
+			
+			while(!pm.getPlayerCacheManager().isInPlayerCache(c.getUniqueId())) {
+				if(System.currentTimeMillis() > timeout) {
+					throw new RuntimeException("Took more than 500 ms to put player in cache.");
+				}
+			}
+			
 			CachedPlayer cp = pm.getCachedPlayer(c.getUniqueId());
 			if(cp != null)
 				pm.setJoinedPlayerPermissions(cp);
