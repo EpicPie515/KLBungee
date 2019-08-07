@@ -7,6 +7,7 @@ import com.j256.twofactorauth.TimeBasedOneTimePasswordUtil;
 
 import lol.kangaroo.common.database.DatabaseManager;
 import lol.kangaroo.common.player.BasePlayer;
+import lol.kangaroo.common.util.ObjectMutable;
 
 public class Auth {
 
@@ -17,17 +18,31 @@ public class Auth {
 	}
 	
 	private static String getSecret(BasePlayer bp) {
-		String secret = "";
+		ObjectMutable<String> str = new ObjectMutable<>("");
 		db.query("SELECT `SECRET` FROM `auth_secrets` WHERE `UUID`=?", rs -> {
 			try {
 				if(rs.next()) {
-					secret.concat(rs.getString("SECRET"));
+					str.set(rs.getString("SECRET"));
 				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}, bp.getUniqueId());
-		return secret;
+		return str.get();
+	}
+	
+	public static boolean hasSecret(BasePlayer bp) {
+		ObjectMutable<Boolean> has = new ObjectMutable<>(false);
+		db.query("SELECT `SECRET` FROM `auth_secrets` WHERE `UUID`=?", rs -> {
+			try {
+				if(rs.next()) {
+					has.set(true);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}, bp.getUniqueId());
+		return has.get();
 	}
 	
 	public static boolean validate(BasePlayer bp, int otpCode, int millisBuffer) {

@@ -101,22 +101,24 @@ public class GrantSub extends Subcommand {
 			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_GRANT_RANKORPERMREQ);
 			return;
 		}
-		if(permValue == null) {
-			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_GRANT_PERMREQVALUE);
-			return;
-		}
 		boolean pVal = true;
-		if(permValue.toLowerCase().startsWith("t")) 
-			pVal = true;
-		else if(permValue.toLowerCase().startsWith("f"))
-			pVal = false;
-		else if(permValue.equals("0"))
-			pVal = false;
-		else if(permValue.equals("1"))
-			pVal = true;
-		else {
-			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_GRANT_PERMREQVALUE);
-			return;
+		if(type == 2) {
+			if(permValue == null) {
+				Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_GRANT_PERMREQVALUE);
+				return;
+			}
+			if(permValue.toLowerCase().startsWith("t")) 
+				pVal = true;
+			else if(permValue.toLowerCase().startsWith("f"))
+				pVal = false;
+			else if(permValue.equals("0"))
+				pVal = false;
+			else if(permValue.equals("1"))
+				pVal = true;
+			else {
+				Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_GRANT_PERMREQVALUE);
+				return;
+			}
 		}
 		if(timeStr == null) {
 			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_GRANT_TIMEREQ);
@@ -166,22 +168,22 @@ public class GrantSub extends Subcommand {
 				target.setVariableInUpdate(c, PlayerVariable.RANK, rank);
 				target.setVariableInUpdate(c, PlayerVariable.RANK_EXPIRETIME, (permanent ? null : Timestamp.from(end)));
 				c.pushUpdates();
-				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_SUCCESS, 
+				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_RANK_SUCCESS, 
 						pm.getRankManager().getPrefixDirect(target.getUniqueId()) + target.getVariable(PlayerVariable.USERNAME), 
 						typeValFormatted, 
 						dur, 
 						note);
 				Message.sendMessage(target, MSG.PLAYER_GRANTEDRANK, typeValFormatted, dur);
 			} else if(type == 2) {
-				typeValFormatted = pVal ? (ChatColor.GREEN + "+" + typeValue.toLowerCase()) : (ChatColor.RED + "-" + typeValue.toLowerCase());
+				typeValFormatted = pVal ? (ChatColor.GREEN + "+" + typeValue.toUpperCase()) : (ChatColor.RED + "-" + typeValue.toUpperCase());
 				PermissionManager prm = pm.getPermissionManager();
 				prm.setPlayerPermission(target, typeValue, pVal, (permanent ? null : Timestamp.from(end)));
-				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_SUCCESS, 
+				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_PERM_SUCCESS, 
 						pm.getRankManager().getPrefixDirect(target.getUniqueId()) + target.getVariable(PlayerVariable.USERNAME), 
 						typeValFormatted, 
 						dur, 
 						note);
-				Message.sendMessage(target, MSG.PLAYER_GRANTEDRANK, typeValFormatted, dur);
+				Message.sendMessage(target, MSG.PLAYER_GRANTEDPERM, typeValFormatted);
 			}
 			Logs.Grant.addLog(target.getUniqueId(), System.currentTimeMillis(), bp.getUniqueId(), 'g', type, ChatColor.stripColor(typeValFormatted), note, pVal);
 		});
@@ -189,7 +191,7 @@ public class GrantSub extends Subcommand {
 
 	@Override
 	public void executeConsole(String label, String[] args) {
-		// TODO authenticate still
+		Message.sendConsole(MSG.PREFIX_ERROR, MSG.NO_PERM);
 	}
 	
 	

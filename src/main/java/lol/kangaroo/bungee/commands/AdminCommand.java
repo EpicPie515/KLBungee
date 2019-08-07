@@ -3,6 +3,7 @@ package lol.kangaroo.bungee.commands;
 import java.util.Arrays;
 
 import lol.kangaroo.bungee.commands.admin.CmdlistSub;
+import lol.kangaroo.bungee.commands.admin.GenauthSub;
 import lol.kangaroo.bungee.commands.admin.GrantSub;
 import lol.kangaroo.bungee.commands.admin.PlayerinfoSub;
 import lol.kangaroo.bungee.commands.admin.TestvoteSub;
@@ -23,6 +24,7 @@ public class AdminCommand extends CommandExecutor {
 		registerSubcommand(new TestvoteSub(pm, proxy, this));
 		registerSubcommand(new PlayerinfoSub(pm, proxy, this));
 		registerSubcommand(new GrantSub(pm, proxy, this));
+		registerSubcommand(new GenauthSub(pm, proxy, this));
 		registerSubcommand(new CmdlistSub(pm, proxy, this, subCommands.values()));
 	}
 
