@@ -1,44 +1,23 @@
 package lol.kangaroo.bungee.listeners;
 
-import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.common.player.CachedPlayer;
-import net.md_5.bungee.api.ProxyServer;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
-import net.md_5.bungee.api.event.PostLoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
-import net.md_5.bungee.event.EventHandler;
-import net.md_5.bungee.event.EventPriority;
 
 public class PermissionListener implements Listener {
 	
 	private PlayerManager pm;
-	private ProxyServer proxy;
-	private KLBungeePlugin pl;
 	
-	public PermissionListener(PlayerManager pm, KLBungeePlugin pl) {
+	public PermissionListener(PlayerManager pm) {
 		this.pm = pm;
-		this.pl = pl;
-		this.proxy = ProxyServer.getInstance();
 	}
 	
-	@EventHandler(priority=EventPriority.HIGH)
-	public void onPostLogin(PostLoginEvent e) {
-		ProxiedPlayer c = e.getPlayer();
-		proxy.getScheduler().runAsync(pl, () -> {
-			// 500ms maximum to wait for cache
-			long timeout = System.currentTimeMillis() + 500;
-			
-			while(!pm.getPlayerCacheManager().isInPlayerCache(c.getUniqueId())) {
-				if(System.currentTimeMillis() > timeout) {
-					throw new RuntimeException("Took more than 500 ms to put player in cache.");
-				}
-			}
-			
-			CachedPlayer cp = pm.getCachedPlayer(c.getUniqueId());
-			if(cp != null)
-				pm.setJoinedPlayerPermissions(cp);
-		});
+	/**
+	 * Called by @PlayerDatabaseListener because the cache doesn't like being accessed 3 times on join.
+	 */
+	public void onPostLogin(CachedPlayer cp) {
+		if(cp == null) return;
+		pm.setJoinedPlayerPermissions(cp);
 	}
 	
 }
