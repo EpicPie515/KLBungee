@@ -26,22 +26,26 @@ public class PluginMessage implements Listener {
 		plugin = pl;
 		ps = plugin.getProxy();
 		ps.registerChannel("CommandAction");
+		ps.registerChannel("CommandGUI");
 		ps.getPluginManager().registerListener(plugin, new PluginMessage());
 	}
 	
 	public static void sendToSpigot(ProxiedPlayer p, String channel, MessageWrapper m) {
 		if(!ps.getChannels().contains(channel)) ps.registerChannel(channel);
-		p.getServer().sendData(channel, m.b.toByteArray());
+		p.getServer().getInfo().sendData(channel, m.b.toByteArray());
+		m.close();
 	}
 	
 	public static void sendToSpigot(Server s, String channel, MessageWrapper m) {
 		if(!ps.getChannels().contains(channel)) ps.registerChannel(channel);
-		s.sendData(channel, m.b.toByteArray());
+		s.getInfo().sendData(channel, m.b.toByteArray());
+		m.close();
 	}
 	
 	public static void sendToSpigot(ServerInfo s, String channel, MessageWrapper m) {
 		if(!ps.getChannels().contains(channel)) ps.registerChannel(channel);
 		s.sendData(channel, m.b.toByteArray());
+		m.close();
 	}
 	
 	public static class MessageWrapper {
@@ -96,7 +100,13 @@ public class PluginMessage implements Listener {
 			return this;
 		}
 		
-		
+		void close() {
+			try {
+				out.close();
+			} catch(IOException e) {
+				e.printStackTrace();
+			}
+		}
 		
 	}
 	
