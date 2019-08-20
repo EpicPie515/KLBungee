@@ -6,8 +6,6 @@ import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.bungee.commands.CommandExecutor;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.util.Message;
-import lol.kangaroo.bungee.util.PluginMessage;
-import lol.kangaroo.bungee.util.PluginMessage.MessageWrapper;
 import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
@@ -31,8 +29,8 @@ public class UnmuteCommand extends CommandExecutor {
 			UUID uuid = pm.getFromAny(args[0]);
 			CachedPlayer cp = pm.getCachedPlayer(uuid);
 			if(args.length == 1) {
-				PluginMessage.sendToSpigot(sender, "CommandGUI", new MessageWrapper("unmute").writeUuid(uuid));
-				return;
+//				PluginMessage.sendToSpigot(sender, "CommandGUI", new MessageWrapper("unmute").writeUuid(uuid));
+//				return;
 			}
 			String reason = "No Reason Specified";
 			if(args.length > 1) {
