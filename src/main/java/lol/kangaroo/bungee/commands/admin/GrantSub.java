@@ -37,8 +37,8 @@ public class GrantSub extends Subcommand {
 		super(pm, proxy, parent, "grant", Rank.ADMIN_DEV.getPerm(), "gr");
 	}
 	
-	private static final Pattern argPattern = Pattern.compile("^-([a-z][a-z]*)=(.+)$");
-	private static final Pattern timePattern = Pattern.compile("^([0-9]+)([smhdwy])$");
+	private static final Pattern argPattern = Pattern.compile("^-([a-z][a-z]*)=(.+)$", Pattern.CASE_INSENSITIVE);
+	private static final Pattern timePattern = Pattern.compile("^([0-9]+)([smhdwy])$", Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
