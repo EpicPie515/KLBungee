@@ -93,7 +93,7 @@ public class PunishManager implements IPunishManager {
 		Set<UUID> bc = new HashSet<>();
 		Set<UUID> mc = new HashSet<>();
 		Map<DoubleObject<String, Object[]>, Consumer<ResultSet>> queries = new HashMap<>();
-		queries.put(new DoubleObject<>("SELECT `UUID` FROM `log_bans` WHERE `ACTIVE`=1", new Object[0]), rs -> {
+		queries.put(new DoubleObject<>("SELECT `UUID` FROM `log_ban` WHERE `ACTIVE`=1", new Object[0]), rs -> {
 			try {
 				while(rs.next()) {
 					bc.add(UUID.fromString(rs.getString(1)));
