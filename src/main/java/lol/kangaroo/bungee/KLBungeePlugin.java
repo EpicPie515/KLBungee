@@ -6,8 +6,11 @@ import java.util.Locale;
 import lol.kangaroo.bungee.commands.AdminCommand;
 import lol.kangaroo.bungee.commands.CachedumpCommand;
 import lol.kangaroo.bungee.commands.CommandExecutor;
+import lol.kangaroo.bungee.commands.GotoCommand;
+import lol.kangaroo.bungee.commands.PullCommand;
 import lol.kangaroo.bungee.commands.player.LinksCommand;
 import lol.kangaroo.bungee.commands.player.PingCommand;
+import lol.kangaroo.bungee.commands.player.ServerCommand;
 import lol.kangaroo.bungee.commands.punish.BanCommand;
 import lol.kangaroo.bungee.commands.punish.BlacklistCommand;
 import lol.kangaroo.bungee.commands.punish.MuteCommand;
@@ -32,6 +35,7 @@ import lol.kangaroo.bungee.player.PlayerCacheManager;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.player.PlayerVariableManager;
 import lol.kangaroo.bungee.player.punish.PunishManager;
+import lol.kangaroo.bungee.servers.ServerManager;
 import lol.kangaroo.bungee.util.PluginMessage;
 import lol.kangaroo.common.KLCommon;
 import lol.kangaroo.common.database.DatabaseManager;
@@ -51,6 +55,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	private ConfigManager configManager;
 	
 	private DatabaseManager db;
+	private ServerManager svm;
 	
 	private I18N i18n;
 	
@@ -98,6 +103,8 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		di.createPlayerTables();
 		di.createLogTables();
 		
+		svm = new ServerManager(configManager, getProxy());
+		
 		Setting.init(db);
 		Logs.init(db);
 		Auth.init(db);
@@ -125,6 +132,9 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		CommandExecutor.registerCommand(new UnmuteCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new LinksCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new PingCommand(pm, getProxy()));
+		CommandExecutor.registerCommand(new ServerCommand(pm, getProxy(), this));
+		CommandExecutor.registerCommand(new PullCommand(pm, getProxy(), this));
+		CommandExecutor.registerCommand(new GotoCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new AdminCommand(pm, getProxy()));
 		CommandExecutor.registerCommand(new CachedumpCommand(pm, getProxy(), this));
 		
@@ -149,7 +159,7 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		PluginManager pluginManager = getProxy().getPluginManager();
 		
 		pluginManager.registerListener(this, pdl = new PlayerDatabaseListener(pm, this));
-		pluginManager.registerListener(this, prl = new PermissionListener(pm, this));
+		pluginManager.registerListener(this, prl = new PermissionListener(pm));
 		pluginManager.registerListener(this, ajal = new AdminJoinAlertListener(pm, this));
 		pluginManager.registerListener(this, vol = new VoteListener(pm));
 
@@ -200,28 +210,6 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		return i18n;
 	}
 	
-	public int getServerID(String name) {
-		Configuration servers = configManager.getConfig("settings").getSection("server-index");
-		for(String s : servers.getKeys()) {
-			if(servers.getString(s).equalsIgnoreCase(name)) {
-				return Integer.valueOf(s);
-			}
-		}
-		if(name.equalsIgnoreCase("network")) return 0;
-		throw new RuntimeException("invalid server name, server cannot proceed, so how about you don't fuck with server names");
-	}
-	
-	public String getServerName(int id) {
-		Configuration servers = configManager.getConfig("settings").getSection("server-index");
-		for(String s : servers.getKeys()) {
-			if(s.equals(id + "")) {
-				return servers.getString(s);
-			}
-		}
-		if(id == 0) return "network";
-		throw new RuntimeException("invalid server id, server cannot proceed, so how about you don't fuck with server ids");
-	}
-	
 	
 	public PlayerDatabaseListener getPlayerDatabaseListener() {
 		return pdl;
@@ -249,6 +237,10 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	
 	public VoteListener getVoteListener() {
 		return vol;
+	}
+	
+	public ServerManager getServerManager() {
+		return svm;
 	}
 	
 	@Override
