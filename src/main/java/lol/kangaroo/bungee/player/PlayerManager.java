@@ -9,8 +9,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +38,8 @@ import lol.kangaroo.common.player.punish.Blacklist;
 import lol.kangaroo.common.player.punish.Mute;
 import lol.kangaroo.common.player.punish.Punishment;
 import lol.kangaroo.common.util.DoubleObject;
+import lol.kangaroo.common.util.DurationFormat;
+import lol.kangaroo.common.util.I18N;
 import lol.kangaroo.common.util.MSG;
 import lol.kangaroo.common.util.ObjectMutable;
 import net.md_5.bungee.api.ChatColor;
@@ -92,6 +96,16 @@ public class PlayerManager {
 	
 	public PermissionManager getPermissionManager() {
 		return prm;
+	}
+	
+	public Set<BasePlayer> convertProxiedPlayers(Collection<ProxiedPlayer> players) {
+		Set<BasePlayer> converts = new HashSet<>();
+		Iterator<ProxiedPlayer> it = players.iterator();
+		while(it.hasNext()) {
+			ProxiedPlayer pp = it.next();
+			converts.add(getCachedPlayer(pp.getUniqueId()));
+		}
+		return converts;
 	}
 	
 	/**
@@ -480,7 +494,7 @@ public class PlayerManager {
 			timeLeftStr = MSG.BANNED_TIMEREMAINING.getMessage(p, timeLeft);
 		}
 		if(pp != null) {
-			server = pl.getServerID(pp.getServer().getInfo().getName());
+			server = pl.getServerManager().getServerID(pp.getServer().getInfo().getName());
 			String bm = MSG.KICKMESSAGE_BAN.getMessage(p, MSG.BANSCREEN_LINE.getMessage(p), MSG.PUNISHMESSAGE_HAVEBEEN.getMessage(p), authorName, date, durStr, reason, timeLeftStr, MSG.APPEAL_URL.getMessage(p), MSG.BANSCREEN_LINE.getMessage(p));
 			TextComponent banMessage = new TextComponent(TextComponent.fromLegacyText(bm));
 			pp.disconnect(banMessage);
@@ -491,6 +505,11 @@ public class PlayerManager {
 				else
 					Message.broadcast(MSG.PUBLIC_BANALERT, targetName, authorName, reason);
 			}
+			if(pl.getServerManager().isGameServer(server)) {
+				Collection<ProxiedPlayer> onServer = pl.getServerManager().getServerInfo(server).getPlayers();
+				Set<BasePlayer> onServerBPs = convertProxiedPlayers(onServer);
+				Message.broadcast(onServerBPs, MSG.PREFIX_LOLCHEAT, MSG.PUBLIC_GAMEBANALERT);
+			}
 		}
 
 		Set<BasePlayer> staff = new HashSet<>();
@@ -499,7 +518,7 @@ public class PlayerManager {
 			if(cp != null && ((Rank) cp.getVariable(PlayerVariable.RANK)).isStaff())
 				staff.add(cp);
 		}
-		String srvName = pl.getServerName(server);
+		String srvName = pl.getServerManager().getServerName(server);
 		if(server == 0) srvName = MSG.ADMIN_OFFLINE.getMessage(Locale.getDefault());
 		if(duration != 1) {
 			Message.broadcast(staff, MSG.ADMIN_TEMPBANALERT, srvName, targetName, durStr, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
@@ -538,24 +557,12 @@ public class PlayerManager {
 		String durStr = MSG.TIMEFORMAT_PERMANENT.getMessage(p);
 		String timeLeftStr = MSG.TIMEFORMAT_PERMANENT.getMessage(p);
 		if(duration != -1) {
-			Duration dur = Duration.ofMillis(duration);
-			long days = dur.get(ChronoUnit.DAYS); dur.minusDays(days);
-			long hours = dur.get(ChronoUnit.HOURS); dur.minusHours(hours);
-			long minutes = dur.get(ChronoUnit.MINUTES);
-			durStr = (days > 0 ? days + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-					+ (hours > 0 ? hours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-					+ minutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
-			Duration tlDur = Duration.ofMillis(duration);
-			long tldays = tlDur.get(ChronoUnit.DAYS); tlDur.minusDays(days);
-			long tlhours = tlDur.get(ChronoUnit.HOURS); tlDur.minusHours(hours);
-			long tlminutes = tlDur.get(ChronoUnit.MINUTES);
-			timeLeftStr = (tldays > 0 ? tldays + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-					+ (tlhours > 0 ? tlhours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-					+ tlminutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
+			durStr = DurationFormat.getFormatted1UnitDuration(Duration.ofMillis(duration), I18N.getPlayerLocale(p), false);
+			timeLeftStr = DurationFormat.getFormatted1UnitDuration(Duration.ofMillis(duration), I18N.getPlayerLocale(p), false);
 		}
 		if(pp != null) {
-			server = pl.getServerID(pp.getServer().getInfo().getName());
-			if(duration != 1) {
+			server = pl.getServerManager().getServerID(pp.getServer().getInfo().getName());
+			if(duration != -1) {
 				if(!silent)
 					Message.broadcast(MSG.PUBLIC_TEMPMUTEALERT, targetName, durStr, authorName, reason);
 				
@@ -574,7 +581,7 @@ public class PlayerManager {
 			if(cp != null && ((Rank) cp.getVariable(PlayerVariable.RANK)).isStaff())
 				staff.add(cp);
 		}
-		String srvName = pl.getServerName(server);
+		String srvName = pl.getServerManager().getServerName(server);
 		if(server == 0) srvName = MSG.ADMIN_OFFLINE.getMessage(Locale.getDefault());
 		if(duration != 1) {
 			Message.broadcast(staff, MSG.ADMIN_TEMPMUTEALERT, srvName, targetName, durStr, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
@@ -612,7 +619,7 @@ public class PlayerManager {
 		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
 		String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("d MMM uuuu"));
 		if(pp != null) {
-			server = pl.getServerID(pp.getServer().getInfo().getName());
+			server = pl.getServerManager().getServerID(pp.getServer().getInfo().getName());
 			String bm = MSG.KICKMESSAGE_BLACKLIST.getMessage(p, MSG.BANSCREEN_LINE.getMessage(p), MSG.PUNISHMESSAGE_HAVEBEEN.getMessage(p), authorName, date, reason, MSG.BANSCREEN_LINE.getMessage(p));
 			TextComponent blacklistMessage = new TextComponent(TextComponent.fromLegacyText(bm));
 			pp.disconnect(blacklistMessage);
@@ -642,7 +649,7 @@ public class PlayerManager {
 	public void kickPlayer(BasePlayer p, String reason, BasePlayer author, boolean silent) {
 		ProxiedPlayer pp = proxy.getPlayer(p.getUniqueId());
 		if(pp == null) return;
-		int server = pl.getServerID(pp.getServer().getInfo().getName());
+		int server = pl.getServerManager().getServerID(pp.getServer().getInfo().getName());
 		// No prefixes to reduce chat clutter
 		// NICKNAME should only be used for at-the-moment things, such as chat
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
@@ -664,7 +671,7 @@ public class PlayerManager {
 			if(cp != null && ((Rank) cp.getVariable(PlayerVariable.RANK)).isStaff())
 				staff.add(cp);
 		}
-		String srvName = pl.getServerName(server);
+		String srvName = pl.getServerManager().getServerName(server);
 		Message.broadcast(staff, MSG.ADMIN_KICKALERT, srvName, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
 		Message.sendConsole(MSG.ADMIN_KICKALERT, srvName, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
 		
