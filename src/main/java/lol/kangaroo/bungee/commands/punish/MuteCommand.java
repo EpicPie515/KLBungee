@@ -24,7 +24,7 @@ public class MuteCommand extends CommandExecutor {
 		super(pm, proxy, "mute", Rank.JRMOD.getPerm(), "smute");
 	}
 	
-	private static final Pattern fullTimeCheck = Pattern.compile("^([0-9]+)([smhdwy])$");
+	private static final Pattern fullTimeCheck = Pattern.compile("^-([0-9]+)([smhdwy])$");
 
 	@Override
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
