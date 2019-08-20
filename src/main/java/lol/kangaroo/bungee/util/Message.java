@@ -394,6 +394,33 @@ public class Message {
 	}
 	
 	/**
+	 * Sends the given @MSG to the given players.
+	 * 
+	 * This will send the MSG to all players in the set in their own language setting.
+	 * @param msg the Unlocalized MSG to send.
+	 * @param players the Players to broadcast to.
+	 * @param prefix the Unlocalized MSG to prefix.
+	 * @param args the arguments given to the message.
+	 */
+	public static void broadcast(Set<BasePlayer> players, MSG prefix, MSG msg, Object... args) {
+		for(BasePlayer p : players) {
+			ProxiedPlayer pp = proxy.getPlayer(p.getUniqueId());
+			if(pp == null) continue;
+			String m = msg.getMessage(p, args);
+			String[] ms = m.split("\n");
+			TextComponent prefixtc = new TextComponent(TextComponent.fromLegacyText(prefix.getMessage(p, args)));
+			TextComponent tc = new TextComponent(TextComponent.fromLegacyText(ms[0]));
+			prefixtc.addExtra(tc);
+			pp.sendMessage(prefixtc);
+			if(ms.length > 1)
+				for(int i = 1; i < ms.length; i++) {
+					TextComponent mc = new TextComponent(TextComponent.fromLegacyText(ms[i]));
+					pp.sendMessage(mc);
+				}
+		}
+	}
+	
+	/**
 	 * Sends the given string to all online players.
 	 * 
 	 * This will send the MSG to all players without translation,
