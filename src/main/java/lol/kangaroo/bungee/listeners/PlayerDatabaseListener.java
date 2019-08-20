@@ -84,13 +84,17 @@ public class PlayerDatabaseListener implements Listener {
 			if(lastJoin.getDayOfMonth() != thisJoin.getDayOfMonth()
 					|| lastJoin.getMonthValue() != thisJoin.getMonthValue()
 					|| lastJoin.getYear() != thisJoin.getYear()) {
-				cp.setVariableInUpdate(u, PlayerVariable.NETWORK_BALANCE, (150 * r.getLevel()) + ((long) cp.getVariable(PlayerVariable.NETWORK_BALANCE)));
+				cp.setVariableInUpdate(u, PlayerVariable.NETWORK_BALANCE, (100 * r.getLevel()) + ((long) cp.getVariable(PlayerVariable.NETWORK_BALANCE)));
 				KLBungeePlugin.instance.getProxy().getScheduler().schedule(KLBungeePlugin.instance, () -> {
 					Message.sendMessage(cp, MSG.DAILY_BONUS, (150 * r.getLevel()));
 				}, 1000, TimeUnit.MILLISECONDS);
 			}
 			u.pushUpdates();
 			hu.pushUpdates();
+			
+			// Call the other 2 join listeners from here.
+			pl.getAdminJoinAlertListener().onPostLogin(cp);
+			pl.getPermissionListener().onPostLogin(cp);
 		});
 	}
 	
