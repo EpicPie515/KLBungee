@@ -3,7 +3,6 @@ package lol.kangaroo.bungee.listeners;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -15,6 +14,8 @@ import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.player.punish.Ban;
 import lol.kangaroo.common.player.punish.Punishment;
+import lol.kangaroo.common.util.DurationFormat;
+import lol.kangaroo.common.util.I18N;
 import lol.kangaroo.common.util.MSG;
 import net.md_5.bungee.api.event.LoginEvent;
 import net.md_5.bungee.api.plugin.Listener;
@@ -48,6 +49,7 @@ public class BanListener implements Listener {
 					if(pun instanceof Ban) ban = (Ban) pun;
 				if(ban == null) return;
 				CachedPlayer p = pm.getCachedPlayer(ban.getUniqueId());
+				Locale lang = I18N.getPlayerLocale(p);
 				if(ban.getDuration() != -1 && ban.getTimestamp() + ban.getDuration() < System.currentTimeMillis()) {
 					pum.executeUnBan(ban, "Ban Expired", PunishManager.ZERO_UUID);
 					e.setCancelled(false);
@@ -66,24 +68,9 @@ public class BanListener implements Listener {
 				String timeLeftStr = MSG.BANNED_TIMEPERMANENT.getMessage(p);
 				if(ban.getDuration() != -1) {
 					Duration dur = Duration.ofMillis(ban.getDuration());
-					long years = dur.get(ChronoUnit.YEARS); dur.minus(years, ChronoUnit.YEARS);
-					long days = dur.get(ChronoUnit.DAYS); dur.minusDays(days);
-					long hours = dur.get(ChronoUnit.HOURS); dur.minusHours(hours);
-					long minutes = dur.get(ChronoUnit.MINUTES);
-					durStr = (years > 0 ? years + MSG.TIMEFORMAT_YEARS.getMessage(p) + ", " : "")
-							+ (days > 0 ? days + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-							+ (hours > 0 ? hours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-							+ minutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
+					durStr = DurationFormat.getFormatted1UnitDuration(dur, lang, false);
 					Duration tlDur = Duration.ofMillis((ban.getTimestamp() + ban.getDuration()) - System.currentTimeMillis());
-					long tlyears = tlDur.get(ChronoUnit.YEARS); tlDur.minus(years, ChronoUnit.YEARS);
-					long tldays = tlDur.get(ChronoUnit.DAYS); tlDur.minusDays(days);
-					long tlhours = tlDur.get(ChronoUnit.HOURS); tlDur.minusHours(hours);
-					long tlminutes = tlDur.get(ChronoUnit.MINUTES);
-					String timeLeft = (tlyears > 0 ? tlyears + MSG.TIMEFORMAT_YEARS.getMessage(p) + ", " : "")
-							+ (tldays > 0 ? tldays + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-							+ (tlhours > 0 ? tlhours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-							+ tlminutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
-					timeLeftStr = MSG.BANNED_TIMEREMAINING.getMessage(p, timeLeft);
+					timeLeftStr = DurationFormat.getFormatted1UnitDuration(tlDur, lang, false);
 				}
 				String bm = MSG.KICKMESSAGE_BAN.getMessage(p, MSG.BANSCREEN_LINE.getMessage(p), MSG.PUNISHMESSAGE_HAVEBEEN.getMessage(p), authorName, date, durStr, ban.getReason(), timeLeftStr, MSG.APPEAL_URL.getMessage(p), MSG.BANSCREEN_LINE.getMessage(p));
 				e.setCancelReason(bm);

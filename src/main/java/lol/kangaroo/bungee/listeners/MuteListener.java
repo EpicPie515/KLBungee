@@ -3,7 +3,6 @@ package lol.kangaroo.bungee.listeners;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 import java.util.Set;
 
@@ -16,6 +15,8 @@ import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.player.punish.Mute;
 import lol.kangaroo.common.player.punish.Punishment;
+import lol.kangaroo.common.util.DurationFormat;
+import lol.kangaroo.common.util.I18N;
 import lol.kangaroo.common.util.MSG;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.event.ChatEvent;
@@ -68,6 +69,7 @@ public class MuteListener implements Listener {
 				}
 				
 				CachedPlayer p = pm.getCachedPlayer(mute.getUniqueId());
+				Locale lang = I18N.getPlayerLocale(p);
 				CachedPlayer author = pm.getCachedPlayer(mute.getAuthor());
 				// No prefixes to reduce chat clutter.
 				// NICKNAME should only be used for at-the-moment things, such as chat
@@ -78,23 +80,9 @@ public class MuteListener implements Listener {
 				String timeLeftStr = MSG.BANNED_TIMEPERMANENT.getMessage(p);
 				if(mute.getDuration() != -1) {
 					Duration dur = Duration.ofMillis(mute.getDuration());
-					long years = dur.get(ChronoUnit.YEARS); dur.minus(years, ChronoUnit.YEARS);
-					long days = dur.get(ChronoUnit.DAYS); dur.minusDays(days);
-					long hours = dur.get(ChronoUnit.HOURS); dur.minusHours(hours);
-					long minutes = dur.get(ChronoUnit.MINUTES);
-					durStr = (years > 0 ? years + MSG.TIMEFORMAT_YEARS.getMessage(p) + ", " : "")
-							+ (days > 0 ? days + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-							+ (hours > 0 ? hours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-							+ minutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
+					durStr = DurationFormat.getFormatted1UnitDuration(dur, lang, false);
 					Duration tlDur = Duration.ofMillis((mute.getTimestamp() + mute.getDuration()) - System.currentTimeMillis());
-					long tlyears = tlDur.get(ChronoUnit.YEARS); tlDur.minus(years, ChronoUnit.YEARS);
-					long tldays = tlDur.get(ChronoUnit.DAYS); tlDur.minusDays(days);
-					long tlhours = tlDur.get(ChronoUnit.HOURS); tlDur.minusHours(hours);
-					long tlminutes = tlDur.get(ChronoUnit.MINUTES);
-					timeLeftStr = (tlyears > 0 ? tlyears + MSG.TIMEFORMAT_YEARS.getMessage(p) + ", " : "")
-							+ (tldays > 0 ? tldays + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-							+ (tlhours > 0 ? tlhours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-							+ tlminutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
+					timeLeftStr = DurationFormat.getFormatted1UnitDuration(tlDur, lang, false);
 				}
 				if(mute.getDuration() != -1)
 					Message.sendMessage(p, MSG.MUTEMESSAGE_TEMPORARY, MSG.PUNISHMESSAGE_ARE.getMessage(p), durStr, authorName, mute.getReason(), date, timeLeftStr, MSG.APPEAL_URL.getMessage(p));
