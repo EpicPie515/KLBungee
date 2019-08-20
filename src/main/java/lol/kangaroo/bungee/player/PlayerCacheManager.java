@@ -21,8 +21,6 @@ public class PlayerCacheManager {
 	private long pullUpdateInterval;
 	private long flushInterval;
 	
-	private Set<CachedPlayer> playerCache = new HashSet<>();
-	
 	private Map<UUID, CachedPlayer> uuidCache = new HashMap<>();
 	
 	/**
@@ -55,7 +53,7 @@ public class PlayerCacheManager {
 		
 		@Override
 		public void run() {
-			for(CachedPlayer cp : playerCache) {
+			for(CachedPlayer cp : uuidCache.values()) {
 				// Cached variables to use later.
 				Map<PlayerVariable, Object> map = cp.getAllVariablesMap();
 				// Gets a DatabasePlayer for comparison.
@@ -79,7 +77,7 @@ public class PlayerCacheManager {
 		@Override
 		public void run() {
 			Set<CachedPlayer> tr = new HashSet<>();
-			for(CachedPlayer cp : playerCache) {
+			for(CachedPlayer cp : uuidCache.values()) {
 				ProxiedPlayer pp = pl.getProxy().getPlayer(cp.getUniqueId());
 				if(pp == null) {
 					tr.add(cp);
@@ -92,7 +90,7 @@ public class PlayerCacheManager {
 	}
 	
 	public Set<CachedPlayer> getPlayerCache() {
-		return playerCache;
+		return new HashSet<>(uuidCache.values());
 	}
 	
 	public Map<UUID, CachedPlayer> getUUIDCache() {
@@ -100,20 +98,18 @@ public class PlayerCacheManager {
 	}
 	
 	public boolean isInPlayerCache(CachedPlayer cp) {
-		return playerCache.contains(cp);
+		return uuidCache.containsKey(cp.getUniqueId());
 	}
 	
 	public boolean isInPlayerCache(UUID uuid) {
-		return uuidCache.containsKey(uuid) && playerCache.contains(uuidCache.get(uuid));
+		return uuidCache.containsKey(uuid);
 	}
 	
 	public void addToPlayerCache(CachedPlayer cp) {
-		playerCache.add(cp);
 		uuidCache.put(cp.getUniqueId(), cp);
 	}
 	
 	public void removeFromPlayerCache(CachedPlayer cp) {
-		playerCache.remove(cp);
 		uuidCache.remove(cp.getUniqueId());
 	}
 	
