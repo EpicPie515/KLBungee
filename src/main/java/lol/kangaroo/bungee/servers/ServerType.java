@@ -36,12 +36,16 @@ public enum ServerType {
 		return maxId;
 	}
 	
+	public boolean containsId(int id) {
+		return id >= minId && id < maxId;
+	}
+	
 	/**
 	 * Returns the server type containing that id in range, or null if none.
 	 */
 	public static ServerType getFromID(int id) {
 		for(ServerType t : values()) {
-			if(id >= t.minId && id < t.maxId) return t;
+			if(t.containsId(id)) return t;
 		}
 		return null;
 	}
