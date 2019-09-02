@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,8 +24,9 @@ public class ServerManager {
 	private ProxyServer proxy;
 	
 	public static final Pattern SERVER_NAME_PATTERN = Pattern.compile("^([a-z]{3,5})([0-9]{2})");
-	
+
 	public Map<ServerInfo, Boolean> serverStatus = new HashMap<>();
+	public Map<Integer, Integer> serverPlayerCap = new HashMap<>();
 	
 	public ServerManager(ConfigManager configManager, ProxyServer proxy) {
 		this.configManager = configManager;
@@ -43,9 +45,11 @@ public class ServerManager {
 				if(err != null) {
 					// Error means ping failed, offline.
 					serverStatus.put(serv, false);
+					serverPlayerCap.remove(getServerID(serv.getName()));
 				} else {
 					// No Error, online.
 					serverStatus.put(serv, true);
+					serverPlayerCap.put(getServerID(serv.getName()), ping.getPlayers().getMax());
 				}
 			});
 		}
@@ -101,14 +105,25 @@ public class ServerManager {
 		return getServerType(id).equals(ServerType.HUB);
 	}
 	
+	/**
+	 * excludes servers that are full or almost full.
+	 * @return the ID of a hub which has an open slot and is next in balancing hubs.
+	 */
 	public int findAvailableHub() {
 		// Prefer Hub 1 (or lowest available) up to 20 players, then start balancing.
 		List<Integer> hubs = new ArrayList<>(getAllOnlineHubs());
+		Iterator<Integer> hubIt = hubs.iterator();
 		Collections.sort(hubs);
 		Map<Integer, Integer> pcounts = new HashMap<>();
-		for(int i : hubs) {
-			ServerInfo serv = getServerInfo(i);
-			pcounts.put(i, serv.getPlayers().size());
+		while(hubIt.hasNext()) {
+			int id = hubIt.next();
+			int pcap = serverPlayerCap.containsKey(id) ? serverPlayerCap.get(id) : 0;
+			ServerInfo serv = getServerInfo(id);
+			if(serv.getPlayers().size() > pcap) {
+				hubIt.remove();
+			} else {
+				pcounts.put(id, serv.getPlayers().size());
+			}
 		}
 		int hub1id = hubs.get(0);
 		int hub1pc = pcounts.get(hub1id);
@@ -125,6 +140,23 @@ public class ServerManager {
 			}
 			return lowestId;
 		}
+	}
+	
+	public boolean isServerFull(int id) {
+		int pcap = serverPlayerCap.containsKey(id) ? serverPlayerCap.get(id) : 0;
+		ServerInfo serv = getServerInfo(id);
+		if(serv.getPlayers().size() > pcap) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public boolean isServerOnline(int id) {
+		ServerInfo serv = getServerInfo(id);
+		if(serverStatus.containsKey(serv) && serverStatus.get(serv))
+			return true;
+		return false;
 	}
 	
 	public Set<Integer> getAllOnlineServers() {

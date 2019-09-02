@@ -57,7 +57,17 @@ public class HubCommand extends CommandExecutor {
 			connectAutoHub(sender, bp, srv, srvName);
 			return;
 		}
-		// TODO check if hub full, also do that for auto in findAvailableHub
+		if(!pl.getServerManager().isServerOnline(hub)) {
+			connectAutoHubFallback(sender, bp, srv, srvName, hub);
+			return;
+		}
+		if(pl.getServerManager().isServerFull(hub)) {
+			connectAutoHubFallback(sender, bp, srv, srvName, hub);
+			return;
+		}
+		String hubName = pl.getServerManager().formatServerName(hub);
+		Message.sendMessage(bp, MSG.PREFIX_PLAYER, MSG.PLAYER_SERVER_CONNECTING, hubName);
+		sender.connect(pl.getServerManager().getServerInfo(hub));
 	}
 	
 	private void connectAutoHub(ProxiedPlayer sender, BasePlayer bp, int srv, String srvName) {
@@ -68,6 +78,18 @@ public class HubCommand extends CommandExecutor {
 		int hub = pl.getServerManager().findAvailableHub();
 		String hubName = pl.getServerManager().formatServerName(hub);
 		Message.sendMessage(bp, MSG.PREFIX_PLAYER, MSG.PLAYER_SERVER_CONNECTING, hubName);
+		sender.connect(pl.getServerManager().getServerInfo(hub));
+	}
+	
+	private void connectAutoHubFallback(ProxiedPlayer sender, BasePlayer bp, int srv, String srvName, int intended) {
+		String intName = pl.getServerManager().formatServerName(intended);
+		if(pl.getServerManager().isHub(srv)) {
+			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_HUB_UNAVAILABLE_STAYING, intName, srvName);
+			return;
+		}
+		int hub = pl.getServerManager().findAvailableHub();
+		String hubName = pl.getServerManager().formatServerName(hub);
+		Message.sendMessage(bp, MSG.PREFIX_PLAYER, MSG.COMMAND_HUB_UNAVAILABLE_CONNECTING, intName, hubName);
 		sender.connect(pl.getServerManager().getServerInfo(hub));
 	}
 
