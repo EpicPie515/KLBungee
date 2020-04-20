@@ -30,7 +30,7 @@ public class GotoCommand extends CommandExecutor {
 			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.PLAYER_NOTFOUND);
 			return;
 		}
-		String prefix = pm.getRankManager().getPrefix(cp);
+		String prefix = pm.getRankManager().getPrefix(cp, true);
 		String nickname = (String) cp.getVariable(PlayerVariable.NICKNAME);
 		Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_GOTO_FINDING, prefix + nickname);
 		ProxiedPlayer pp = proxy.getPlayer(cp.getUniqueId());

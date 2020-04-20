@@ -18,17 +18,17 @@ server-index:
   205: mbm05
 
 xp-symbol: '\u272F'
-money-symbol: '$'
 
 db:
-  user: user
+  user: minecraft
   pass: password
-  db: dbname
+  db: kangaroo
   host: localhost
   port: 3306
 
-cacheUpdateInterval: 60000
-cacheFlushInterval: 900000
+cache-settings:
+   update-interval: 60000
+   flush-interval: 900000
 
 muted-blocked-commands:
   - msg

@@ -8,10 +8,10 @@ import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.servers.ServerManager;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.PluginMessage;
-import lol.kangaroo.bungee.util.PluginMessage.MessageWrapper;
 import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.util.MSG;
+import lol.kangaroo.common.util.MessageWrapper;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 

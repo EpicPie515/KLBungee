@@ -5,10 +5,10 @@ import java.util.regex.Pattern;
 
 import lol.kangaroo.bungee.commands.AdminCommand;
 import lol.kangaroo.bungee.commands.Subcommand;
-import lol.kangaroo.bungee.database.Auth;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
+import lol.kangaroo.common.database.Auth;
 import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
@@ -55,7 +55,7 @@ public class GenauthSub extends Subcommand {
 				return;
 			}
 			Rank r = pm.getRankManager().getRank(target, false);
-			String targetName = pm.getRankManager().getPrefix(target) + target.getVariable(PlayerVariable.USERNAME);
+			String targetName = pm.getRankManager().getPrefix(target, false) + target.getVariable(PlayerVariable.USERNAME);
 			if(!r.isStaff()) {
 				Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.COMMAND_ADMIN_GENAUTH_NOTSTAFF, targetName, r.getColor() + r.name());
 				return;
@@ -71,7 +71,7 @@ public class GenauthSub extends Subcommand {
 			}
 			String secret = Auth.generateAndAssignSecret(target);
 			Message.sendMessage(target, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GENAUTH, secret);
-			Message.sendMessage(bp, MSG.COMMAND_ADMIN_GENAUTH_OTHER, pm.getRankManager().getPrefix(target) + target.getVariable(PlayerVariable.USERNAME));
+			Message.sendMessage(bp, MSG.COMMAND_ADMIN_GENAUTH_OTHER, pm.getRankManager().getPrefix(target, false) + target.getVariable(PlayerVariable.USERNAME));
 		});
 	}
 

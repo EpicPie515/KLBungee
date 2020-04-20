@@ -8,8 +8,6 @@ import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.bungee.commands.CommandExecutor;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.util.Message;
-import lol.kangaroo.bungee.util.PluginMessage;
-import lol.kangaroo.bungee.util.PluginMessage.MessageWrapper;
 import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
@@ -35,20 +33,18 @@ public class BanCommand extends CommandExecutor {
 		proxy.getScheduler().runAsync(KLBungeePlugin.instance, () -> {
 			UUID uuid = pm.getFromAny(args[0]);
 			CachedPlayer cp = pm.getCachedPlayer(uuid);
-			if(args.length == 1) {
-				PluginMessage.sendToSpigot(sender, "CommandGUI", new MessageWrapper("ban").writeUuid(uuid));
-				return;
-			}
 			long dur = -1;
 			int argI = 1;
-			Matcher match = fullTimeCheck.matcher(args[1]);
-			if(match.matches()) {
-				argI = 2;
-				long n = Long.parseLong(match.group(1));
-				char u = args[1].charAt(match.start(2));
-				dur = DurationStringCalc.calculate(n, u);
+			if(args.length > 1) {
+				Matcher match = fullTimeCheck.matcher(args[1]);
+				if(match.matches()) {
+					argI = 2;
+					long n = Long.parseLong(match.group(1));
+					char u = args[1].charAt(match.start(2));
+					dur = DurationStringCalc.calculate(n, u);
+				}
 			}
-			String reason = "No Reason Specified";
+			String reason = null;
 			if(args.length > argI) {
 				reason = "";
 				for(int i = argI; i < args.length; i++) {

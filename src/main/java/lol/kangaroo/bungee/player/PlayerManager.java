@@ -5,14 +5,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -22,20 +21,23 @@ import java.util.function.Consumer;
 
 import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.bungee.permissions.RankManager;
-import lol.kangaroo.bungee.player.punish.PunishManager;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.common.database.DatabaseManager;
 import lol.kangaroo.common.permissions.PermissionManager;
 import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
+import lol.kangaroo.common.player.DatabasePlayer;
+import lol.kangaroo.common.player.PlayerGrants;
+import lol.kangaroo.common.player.PlayerGrants.PlayerGrant;
 import lol.kangaroo.common.player.PlayerHistory;
 import lol.kangaroo.common.player.PlayerHistory.HistoryUpdateCache;
-import lol.kangaroo.common.player.PlayerUpdateCache;
 import lol.kangaroo.common.player.PlayerVariable;
+import lol.kangaroo.common.player.PlayerVariableManager;
 import lol.kangaroo.common.player.punish.Ban;
 import lol.kangaroo.common.player.punish.Blacklist;
 import lol.kangaroo.common.player.punish.Mute;
+import lol.kangaroo.common.player.punish.PunishManager;
 import lol.kangaroo.common.player.punish.Punishment;
 import lol.kangaroo.common.util.DoubleObject;
 import lol.kangaroo.common.util.DurationFormat;
@@ -221,8 +223,6 @@ public class PlayerManager {
 		newVariables.put(PlayerVariable.NICKNAME, con.getName());
 		newVariables.put(PlayerVariable.VOTE_LAST, new Timestamp(0));
 		newVariables.put(PlayerVariable.VOTE_STREAK, 0);
-		newVariables.put(PlayerVariable.RANK_EXPIRETIME, new Timestamp(0));
-		newVariables.put(PlayerVariable.RANK_EXPIRETO, Rank.PLAYER);
 		
 		DatabasePlayer dp = getDatabasePlayer(uuid);
 		dp.setAllVariablesMap(newVariables);
@@ -233,6 +233,8 @@ public class PlayerManager {
 		u.addIp(con.getAddress().getAddress(), System.currentTimeMillis());
 		u.addNickname(con.getName(), System.currentTimeMillis());
 		u.pushUpdates();
+		
+		
 		
 		CachedPlayer cp = getCachedPlayer(uuid);
 		return cp;
@@ -469,6 +471,7 @@ public class PlayerManager {
 		// No prefixes to reduce chat clutter
 		// NICKNAME should only be used for at-the-moment things, such as chat
 		// but not for this because someone could use it to detect the real name of the nicked person by checking it when they arent nicked then again when they are.
+		// Also for the broadcast, any staff member, even offline, can issue punishments so it doesnt need nickname.
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(author != null)
 			authorName = pl.getRankManager().getRank(author, false).getColor() + (String) author.getVariable(PlayerVariable.USERNAME);
@@ -477,21 +480,14 @@ public class PlayerManager {
 		String durStr = MSG.TIMEFORMAT_PERMANENT.getMessage(p);
 		String timeLeftStr = MSG.BANNED_TIMEPERMANENT.getMessage(p);
 		if(duration != -1) {
-			Duration dur = Duration.ofMillis(duration);
-			long days = dur.get(ChronoUnit.DAYS); dur.minusDays(days);
-			long hours = dur.get(ChronoUnit.HOURS); dur.minusHours(hours);
-			long minutes = dur.get(ChronoUnit.MINUTES);
-			durStr = (days > 0 ? days + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-					+ (hours > 0 ? hours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-					+ minutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
-			Duration tlDur = Duration.ofMillis(duration);
-			long tldays = tlDur.get(ChronoUnit.DAYS); tlDur.minusDays(days);
-			long tlhours = tlDur.get(ChronoUnit.HOURS); tlDur.minusHours(hours);
-			long tlminutes = tlDur.get(ChronoUnit.MINUTES);
-			String timeLeft = (tldays > 0 ? tldays + MSG.TIMEFORMAT_DAYS.getMessage(p) + ", " : "")
-					+ (tlhours > 0 ? tlhours + MSG.TIMEFORMAT_HOURS.getMessage(p) + ", " : "")
-					+ tlminutes + MSG.TIMEFORMAT_MINUTES.getMessage(p);
-			timeLeftStr = MSG.BANNED_TIMEREMAINING.getMessage(p, timeLeft);
+			durStr = DurationFormat.getFormatted1UnitDuration(Duration.ofMillis(duration), I18N.getPlayerLocale(p), false);
+			String tlraw = DurationFormat.getFormatted1UnitDuration(Duration.ofMillis(duration), I18N.getPlayerLocale(p), false);
+			timeLeftStr = MSG.BANNED_TIMEREMAINING.getMessage(p, tlraw);
+		}
+		boolean noReason = false;
+		if(reason == null) {
+			noReason = true;
+			reason = "No Reason Specified // Contact Support";
 		}
 		if(pp != null) {
 			server = pl.getServerManager().getServerID(pp.getServer().getInfo().getName());
@@ -500,32 +496,36 @@ public class PlayerManager {
 			pp.disconnect(banMessage);
 			
 			if(!silent) {
-				if(duration != 1)
-					Message.broadcast(MSG.PUBLIC_TEMPBANALERT, targetName, durStr, authorName, reason);
+				if(duration != -1)
+					if(noReason)
+						Message.broadcast(MSG.PUBLIC_NRTEMPBANALERT, targetName, durStr, authorName);
+					else
+						Message.broadcast(MSG.PUBLIC_TEMPBANALERT, targetName, durStr, authorName, reason);
 				else
-					Message.broadcast(MSG.PUBLIC_BANALERT, targetName, authorName, reason);
+					if(noReason)
+						Message.broadcast(MSG.PUBLIC_NRBANALERT, targetName, authorName);
+					else
+						Message.broadcast(MSG.PUBLIC_BANALERT, targetName, authorName, reason);
 			}
-			if(pl.getServerManager().isGameServer(server)) {
+			if(true/*pl.getServerManager().isGameServer(server)*/) {
 				Collection<ProxiedPlayer> onServer = pl.getServerManager().getServerInfo(server).getPlayers();
 				Set<BasePlayer> onServerBPs = convertProxiedPlayers(onServer);
 				Message.broadcast(onServerBPs, MSG.PREFIX_LOLCHEAT, MSG.PUBLIC_GAMEBANALERT);
+				
+				// TODO tell the game to handle the ban (e.g. respawn a player, etc.)
+				// or just have the mod that banned respawn the other people
 			}
 		}
 
-		Set<BasePlayer> staff = new HashSet<>();
-		for(ProxiedPlayer ap : proxy.getPlayers()) {
-			CachedPlayer cp = getCachedPlayer(ap.getUniqueId());
-			if(cp != null && ((Rank) cp.getVariable(PlayerVariable.RANK)).isStaff())
-				staff.add(cp);
-		}
+		Set<BasePlayer> staff = getNotifiableStaff();
 		String srvName = pl.getServerManager().getServerName(server);
 		if(server == 0) srvName = MSG.ADMIN_OFFLINE.getMessage(Locale.getDefault());
-		if(duration != 1) {
-			Message.broadcast(staff, MSG.ADMIN_TEMPBANALERT, srvName, targetName, durStr, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
-			Message.sendConsole(MSG.ADMIN_TEMPBANALERT, srvName, targetName, durStr, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+		if(duration != -1) {
+			Message.broadcast(staff, MSG.ADMIN_TEMPBANALERT, srvName, targetName, durStr, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+			Message.sendConsole(MSG.ADMIN_TEMPBANALERT, srvName, targetName, durStr, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
 		} else {
-			Message.broadcast(staff, MSG.ADMIN_BANALERT, srvName, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
-			Message.sendConsole(MSG.ADMIN_BANALERT, srvName, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+			Message.broadcast(staff, MSG.ADMIN_BANALERT, srvName, targetName, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+			Message.sendConsole(MSG.ADMIN_BANALERT, srvName, targetName, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
 		}
 		
 		pum.executeBan(p.getUniqueId(), duration, author != null ? author.getUniqueId() : new UUID(0, 0), reason, server);
@@ -575,20 +575,15 @@ public class PlayerManager {
 			}
 		}
 
-		Set<BasePlayer> staff = new HashSet<>();
-		for(ProxiedPlayer ap : proxy.getPlayers()) {
-			CachedPlayer cp = getCachedPlayer(ap.getUniqueId());
-			if(cp != null && ((Rank) cp.getVariable(PlayerVariable.RANK)).isStaff())
-				staff.add(cp);
-		}
+		Set<BasePlayer> staff = getNotifiableStaff();
 		String srvName = pl.getServerManager().getServerName(server);
 		if(server == 0) srvName = MSG.ADMIN_OFFLINE.getMessage(Locale.getDefault());
-		if(duration != 1) {
-			Message.broadcast(staff, MSG.ADMIN_TEMPMUTEALERT, srvName, targetName, durStr, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
-			Message.sendConsole(MSG.ADMIN_TEMPMUTEALERT, srvName, targetName, durStr, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+		if(duration != -1) {
+			Message.broadcast(staff, MSG.ADMIN_TEMPMUTEALERT, srvName, targetName, durStr, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+			Message.sendConsole(MSG.ADMIN_TEMPMUTEALERT, srvName, targetName, durStr, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
 		} else {
-			Message.broadcast(staff, MSG.ADMIN_MUTEALERT, srvName, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
-			Message.sendConsole(MSG.ADMIN_MUTEALERT, srvName, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+			Message.broadcast(staff, MSG.ADMIN_MUTEALERT, srvName, targetName, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+			Message.sendConsole(MSG.ADMIN_MUTEALERT, srvName, targetName, authorName, reason, silent || server==0 ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
 		}
 		
 		pum.executeMute(p.getUniqueId(), duration, author != null ? author.getUniqueId() : new UUID(0, 0), reason, server);
@@ -604,7 +599,7 @@ public class PlayerManager {
 	 * 
 	 * TODO add a script to firewall the player.
 	 */
-	public boolean blacklistPlayer(BasePlayer p, String reason, BasePlayer author, boolean silent) {
+	public boolean blacklistPlayer(BasePlayer p, String reason, BasePlayer author, boolean silent, boolean anon) {
 		for(Punishment pun : p.getActivePunishments())
 			if(pun instanceof Blacklist && ((Blacklist)pun).isActive()) return false;
 		
@@ -624,18 +619,18 @@ public class PlayerManager {
 			TextComponent blacklistMessage = new TextComponent(TextComponent.fromLegacyText(bm));
 			pp.disconnect(blacklistMessage);
 			
-			if(!silent)
-				Message.broadcast(MSG.PUBLIC_BLACKLISTALERT, MSG.BLACKLIST_LINE.getMessage(Locale.getDefault()), targetName, authorName, reason, MSG.BLACKLIST_LINE.getMessage(Locale.getDefault()));
+			if(!silent) {
+				if(anon) {
+					Message.broadcast(MSG.PUBLIC_ABLACKLISTALERT, targetName, reason, MSG.BLACKLIST_LINE.getMessage(Locale.getDefault()));
+				} else {
+					Message.broadcast(MSG.PUBLIC_BLACKLISTALERT, targetName, authorName, reason, MSG.BLACKLIST_LINE.getMessage(Locale.getDefault()));
+				}
+			}
 		}
 
-		Set<BasePlayer> staff = new HashSet<>();
-		for(ProxiedPlayer ap : proxy.getPlayers()) {
-			CachedPlayer cp = getCachedPlayer(ap.getUniqueId());
-			if(cp != null && ((Rank) cp.getVariable(PlayerVariable.RANK)).isStaff())
-				staff.add(cp);
-		}
-		Message.broadcast(staff, MSG.ADMIN_BLACKLISTALERT, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
-		Message.sendConsole(MSG.ADMIN_BLACKLISTALERT, targetName, authorName, reason, silent ? MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : "");
+		Set<BasePlayer> staff = getNotifiableStaff();
+		Message.broadcast(staff, MSG.ADMIN_BLACKLISTALERT, targetName, authorName, reason, (server==0 ? MSG.ADMIN_OFFLINE.getMessage(Locale.getDefault()) : "") +  (silent ? " " + MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : ""));
+		Message.sendConsole(MSG.ADMIN_BLACKLISTALERT, targetName, authorName, reason, (server==0 ? MSG.ADMIN_OFFLINE.getMessage(Locale.getDefault()) : "") +  (silent ? " " + MSG.ADMIN_SILENT.getMessage(Locale.getDefault()) : ""));
 		
 		pum.executeBlacklist(p.getUniqueId(), author != null ? author.getUniqueId() : new UUID(0, 0), reason, server);
 		return true;
@@ -767,7 +762,7 @@ public class PlayerManager {
 		String authorName = MSG.CONSOLE.getMessage(Locale.getDefault());
 		if(unblacklistAuthor != null)
 			authorName = pl.getRankManager().getRank(unblacklistAuthor, false).getColor() + (String) unblacklistAuthor.getVariable(PlayerVariable.USERNAME);
-		String targetName = pl.getRankManager().getPrefix(p) + (String) p.getVariable(PlayerVariable.NICKNAME);
+		String targetName = pl.getRankManager().getRank(p, true).getColor() + (String) p.getVariable(PlayerVariable.NICKNAME);
 		
 		Blacklist blacklist = null;
 		for(Punishment pun : p.getActivePunishments())
@@ -834,16 +829,20 @@ public class PlayerManager {
 	 * If expired, will be demoted to their DEMOTETO rank.
 	 * @return true if expired+demoted, false if their rank is still valid.
 	 */
-	public boolean demoteIfRankExpired(CachedPlayer bp) {
+	public boolean updateGrants(CachedPlayer bp) {
+		ProxiedPlayer pp = proxy.getPlayer(bp.getUniqueId());
+		if(pp == null || !pp.isConnected()) return false;
+		PlayerGrants grants = PlayerGrants.getPlayerGrants(bp);
+		List<PlayerGrant> expired = grants.updateExpiring();
+		for(PlayerGrant eg : expired) {
+			Rank exprank = eg.getRank();
+			Message.sendMessage(bp, MSG.PLAYER_REMOVEDRANK, exprank.getColor() + exprank.getName(), MSG.PLAYER_REMOVEDEXPIRED.getMessage(bp));
+		}
 		Rank cur = getRankManager().getRank(bp, false);
-		Instant exp = getRankManager().getRankExpiry(bp);
-		if(exp == null || exp.isAfter(Instant.now())) return false;
-		Rank demote = getRankManager().getRankExprireTo(bp);
-		PlayerUpdateCache u = bp.createUpdateCache();
-		bp.setVariableInUpdate(u, PlayerVariable.RANK, demote);
-		bp.setVariableInUpdate(u, PlayerVariable.RANK_EXPIRETIME, new Timestamp(0));
-		u.pushUpdates();
-		Message.sendMessage(bp, MSG.PLAYER_REMOVEDRANK, cur.getColor() + cur.getName(), MSG.PLAYER_REMOVEDEXPIRED.getMessage(bp));
+		// TODO this whoel thing updateGRants
+		//PlayerUpdateCache u = bp.createUpdateCache();
+		//bp.setVariableInUpdate(u, PlayerVariable.RANK, demote);
+		//u.pushUpdates();
 		return true;
 	}
 	

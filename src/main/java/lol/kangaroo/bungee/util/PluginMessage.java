@@ -1,14 +1,13 @@
 package lol.kangaroo.bungee.util;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.util.UUID;
-
 import com.google.common.io.ByteArrayDataInput;
 import com.google.common.io.ByteStreams;
 
 import lol.kangaroo.bungee.KLBungeePlugin;
+import lol.kangaroo.common.player.CachedPlayer;
+import lol.kangaroo.common.player.PlayerVariable;
+import lol.kangaroo.common.util.MSG;
+import lol.kangaroo.common.util.MessageWrapper;
 import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.config.ServerInfo;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
@@ -27,6 +26,7 @@ public class PluginMessage implements Listener {
 		ps = plugin.getProxy();
 		ps.registerChannel("CommandAction");
 		ps.registerChannel("CommandGUI");
+		ps.registerChannel("AdminAlert");
 		ps.getPluginManager().registerListener(plugin, new PluginMessage());
 	}
 	
@@ -48,67 +48,7 @@ public class PluginMessage implements Listener {
 		m.close();
 	}
 	
-	public static class MessageWrapper {
-		
-		public ByteArrayOutputStream b;
-		public DataOutputStream out;
-		
-		public MessageWrapper(String subchannel) {
-			this.b = new ByteArrayOutputStream();
-			this.out = new DataOutputStream(b);
-			try {
-				out.writeUTF(subchannel);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		public MessageWrapper writeInt(int i) {
-			try {
-				out.writeInt(i);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return this;
-		}
-		
-		public MessageWrapper writeUTF(String s) {
-			try {
-				out.writeUTF(s);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return this;
-		}
-		
-		public MessageWrapper writeChar(char c) {
-			try {
-				out.writeChar(c);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return this;
-		}
-		
-		public MessageWrapper writeUuid(UUID u) {
-			try {
-				out.writeLong(u.getLeastSignificantBits());
-				out.writeLong(u.getMostSignificantBits());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return this;
-		}
-		
-		void close() {
-			try {
-				out.close();
-			} catch(IOException e) {
-				e.printStackTrace();
-			}
-		}
-		
-	}
+	// TODO use encryption on plugin messages
 	
 	@EventHandler
 	public void onPluginMessage(PluginMessageEvent e) {
@@ -119,5 +59,16 @@ public class PluginMessage implements Listener {
 			String args = in.readUTF();
 			ps.getPluginManager().dispatchCommand(p, subchannel + args);
 		}
+		
+		if(e.getTag().equals("AdminAlert")) {
+			ByteArrayDataInput in = ByteStreams.newDataInput(e.getData());
+			String subchannel = in.readUTF();
+			ProxiedPlayer p = (ProxiedPlayer) e.getReceiver();
+			CachedPlayer cp = plugin.getPlayerManager().getCachedPlayer(p.getUniqueId());
+			if(subchannel.equals("ChatClear"))
+				Message.broadcast(plugin.getPlayerManager().getNotifiableStaff(), MSG.ADMIN_CHAT_CLEAR, plugin.getRankManager().getPrefix(cp, false) + cp.getVariable(PlayerVariable.USERNAME), plugin.getServerManager().formatServerName(plugin.getServerManager().getServerID(p.getServer().getInfo().getName())));
+		}
+		
+		if(!e.getTag().equals("BungeeCord") && ps.getChannels().contains(e.getTag())) e.setCancelled(true);
 	}
 }

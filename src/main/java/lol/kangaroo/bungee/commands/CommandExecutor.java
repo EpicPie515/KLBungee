@@ -71,7 +71,7 @@ public abstract class CommandExecutor {
 		Command labelCommand = new Command(ce.getLabel(), ce.getPermission()) {
 			@Override
 			public void execute(CommandSender sender, String[] args) {
-					CommandExecutor.execute(sender, this.getName(), args);
+					CommandExecutor.execute(ce, sender, this.getName(), args);
 			}
 		};
 		ProxyServer.getInstance().getPluginManager().registerCommand(KLBungeePlugin.instance, labelCommand);
@@ -79,51 +79,47 @@ public abstract class CommandExecutor {
 			Command aliasCommand = new Command(alias, ce.getPermission()) {
 				@Override
 				public void execute(CommandSender sender, String[] args) {
-					CommandExecutor.execute(sender, this.getName(), args);
+					CommandExecutor.execute(ce, sender, this.getName(), args);
 				}
 			};
 			ProxyServer.getInstance().getPluginManager().registerCommand(KLBungeePlugin.instance, aliasCommand);
 		}
 	}
 	
-	public static boolean execute(CommandSender cs, String label, String[] args) {
+	public static boolean execute(CommandExecutor c, CommandSender cs, String label, String[] args) {
 		if(cs instanceof ProxiedPlayer) {
 			ProxiedPlayer pp = (ProxiedPlayer) cs;
 			CachedPlayer cp = KLBungeePlugin.instance.getPlayerManager().getCachedPlayer(pp.getUniqueId());
-			for(CommandExecutor c : commands) {
-				if(c.getLabel().equalsIgnoreCase(label)) {
-					if(pp.hasPermission(c.getPermission())) {
-						c.execute(pp, cp, label, args);
-						return true;
-					} else {
-						Message.sendMessage(cp, MSG.PREFIX_ERROR, MSG.NO_PERM);
-						return false;
-					}
-				} else
-					for(String s : c.getAliases())
-						if(s.equalsIgnoreCase(label)) {
-							if(pp.hasPermission(c.getPermission())) {
-								c.execute(pp, cp, label, args);
-								return true;
-							} else {
-								Message.sendMessage(cp, MSG.PREFIX_ERROR, MSG.NO_PERM);
-								return false;
-							}
-						}
-			}
-			return false;
-		}
-		for(CommandExecutor c : commands) {
 			if(c.getLabel().equalsIgnoreCase(label)) {
-				c.executeConsole(label, args);
-				return true;
+				if(pp.hasPermission(c.getPermission())) {
+					c.execute(pp, cp, label, args);
+					return true;
+				} else {
+					Message.sendMessage(cp, MSG.PREFIX_ERROR, MSG.NO_PERM);
+					return false;
+				}
 			} else
 				for(String s : c.getAliases())
 					if(s.equalsIgnoreCase(label)) {
-						c.executeConsole(label, args);
-						return true;
+						if(pp.hasPermission(c.getPermission())) {
+							c.execute(pp, cp, label, args);
+							return true;
+						} else {
+							Message.sendMessage(cp, MSG.PREFIX_ERROR, MSG.NO_PERM);
+							return false;
+						}
 					}
+			return false;
 		}
+		if(c.getLabel().equalsIgnoreCase(label)) {
+			c.executeConsole(label, args);
+			return true;
+		} else
+			for(String s : c.getAliases())
+				if(s.equalsIgnoreCase(label)) {
+					c.executeConsole(label, args);
+					return true;
+				}
 		return false;
 	}
 }

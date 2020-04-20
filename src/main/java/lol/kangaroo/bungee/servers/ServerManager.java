@@ -66,11 +66,12 @@ public class ServerManager {
 			}
 		}
 		if(name.equalsIgnoreCase("network")) return 0;
+		if(name.toLowerCase().startsWith("gs@")) return Integer.valueOf(name.substring(3));
 		throw new IllegalArgumentException("invalid server name, server cannot proceed, so how about you don't fuck with server names");
 	}
 
 	/**
-	 * @throws IllegalArgumentException if id does not resolve to name.
+	 * if id does not resolve to a name, the name will show "gs@[id]"
 	 */
 	public String getServerName(int id) {
 		Configuration servers = configManager.getConfig("settings").getSection("server-index");
@@ -80,7 +81,7 @@ public class ServerManager {
 			}
 		}
 		if(id == 0) return "network";
-		throw new IllegalArgumentException("invalid server id, server cannot proceed, so how about you don't fuck with server ids");
+		return "gs@" + id;
 	}
 	
 	public ServerInfo getServerInfo(int id) {

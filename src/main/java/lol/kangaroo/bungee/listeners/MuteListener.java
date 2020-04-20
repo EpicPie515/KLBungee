@@ -8,12 +8,12 @@ import java.util.Set;
 
 import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.bungee.player.PlayerManager;
-import lol.kangaroo.bungee.player.punish.PunishManager;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.player.punish.Mute;
+import lol.kangaroo.common.player.punish.PunishManager;
 import lol.kangaroo.common.player.punish.Punishment;
 import lol.kangaroo.common.util.DurationFormat;
 import lol.kangaroo.common.util.I18N;
@@ -63,7 +63,7 @@ public class MuteListener implements Listener {
 					CachedPlayer p = pm.getCachedPlayer(pp.getUniqueId());
 					pum.executeUnMute(mute, "Mute Expired", PunishManager.ZERO_UUID);
 					Set<BasePlayer> staff = pm.getNotifiableStaff();
-					Message.broadcast(staff, MSG.ADMIN_UNMUTEEXPIREALERT, pm.getRankManager().getPrefix(p) + p.getVariable(PlayerVariable.USERNAME));
+					Message.broadcast(staff, MSG.ADMIN_UNMUTEEXPIREALERT, pm.getRankManager().getPrefix(p, false) + p.getVariable(PlayerVariable.USERNAME));
 					Message.sendMessage(p, MSG.UNMUTEMESSAGE_EXPIRED);
 					return;
 				}

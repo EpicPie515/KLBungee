@@ -39,15 +39,14 @@ public class PlayerDatabaseListener implements Listener {
 		this.proxy = ProxyServer.getInstance();
 	}
 	
-	@EventHandler(priority=EventPriority.HIGHEST)
+	/**
+	 * 
+	 * Not a handler, called by @LoginListener
+	 */
 	public void onLogin(LoginEvent e) {
 		PendingConnection c = e.getConnection();
-		e.registerIntent(pl);
-		proxy.getScheduler().runAsync(pl, () -> {
-			if(!pm.playerExists(c.getUniqueId()))
-				pm.createNewPlayer(c);
-			e.completeIntent(pl);
-		});
+		if(!pm.playerExists(c.getUniqueId()))
+			pm.createNewPlayer(c);
 	}
 	
 	@EventHandler(priority=EventPriority.HIGHEST)
@@ -66,8 +65,8 @@ public class PlayerDatabaseListener implements Listener {
 			PlayerHistory hist = PlayerHistory.getPlayerHistory(cp);
 			HistoryUpdateCache hu = hist.createUpdateCache();
 			cp.setVariableInUpdate(u, PlayerVariable.LASTJOIN, new Timestamp(System.currentTimeMillis()));
-			if(username != c.getName()) {
-				Message.broadcast(pm.getNotifiableStaff(), MSG.ADMIN_NAMECHANGEALERT, pl.getRankManager().getPrefix(cp) + c.getName(), pl.getRankManager().getPrefix(cp) + username);
+			if(!username.equals(c.getName())) {
+				Message.broadcast(pm.getNotifiableStaff(), MSG.PREFIX_ADMIN, MSG.ADMIN_NAMECHANGEALERT, pl.getRankManager().getPrefix(cp, false) + c.getName(), pl.getRankManager().getPrefix(cp, false) + username);
 				cp.setVariableInUpdate(u, PlayerVariable.USERNAME, c.getName());
 				hu.addName(c.getName(), System.currentTimeMillis());
 				if(username.equals(nickname)) {
@@ -99,7 +98,7 @@ public class PlayerDatabaseListener implements Listener {
 	}
 	
 	@EventHandler
-	public void onLogin(PlayerDisconnectEvent e) {
+	public void onDisconnect(PlayerDisconnectEvent e) {
 		CachedPlayer cp = pm.getCachedPlayer(e.getPlayer().getUniqueId());
 		proxy.getScheduler().runAsync(pl, () -> {
 			PlayerUpdateCache u = cp.createUpdateCache();

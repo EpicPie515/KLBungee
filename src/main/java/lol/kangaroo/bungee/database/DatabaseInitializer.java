@@ -67,6 +67,13 @@ public class DatabaseInitializer {
 				+ "(`RANK` VARCHAR(255), `PERM` VARCHAR(255), `VALUE` BOOLEAN, "
 				+ "PRIMARY KEY (`RANK`, `PERM`));");
 		
+		/** PLAYER_GRANTS - Rank grants for a player.
+		 *  Primary Key - (UUID + RANK)
+		 */
+		db.update("CREATE TABLE IF NOT EXISTS `player_grants` "
+				+ "(`UUID` CHAR(36), `GRANTID` INT NOT NULL AUTO_INCREMENT, `RANKID` INT, `DURATION` BIGINT DEFAULT '0', `ACTIVATED_TIMESTAMP` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP(), `EXPIRED` BOOLEAN, "
+				+ "PRIMARY KEY (`UUID`, `RANK`));");
+		
 		/** PLAYER_PERMS - External plugin permissions for a player.
 		 *  Primary Key - (UUID + PERM)
 		 */

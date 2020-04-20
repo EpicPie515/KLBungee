@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.Locale;
@@ -17,7 +18,6 @@ import lol.kangaroo.bungee.player.Money;
 import lol.kangaroo.bungee.player.PlayerLevel;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.player.PlayerVoteStreak;
-import lol.kangaroo.bungee.player.punish.PunishManager;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
 import lol.kangaroo.common.permissions.Rank;
@@ -27,6 +27,7 @@ import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.player.punish.Ban;
 import lol.kangaroo.common.player.punish.Blacklist;
 import lol.kangaroo.common.player.punish.Mute;
+import lol.kangaroo.common.player.punish.PunishManager;
 import lol.kangaroo.common.player.punish.Punishment;
 import lol.kangaroo.common.util.DurationFormat;
 import lol.kangaroo.common.util.I18N;
@@ -175,21 +176,21 @@ public class PlayerinfoSub extends Subcommand {
 			}
 			
 			Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_PLAYERINFO, 
-					rm.getPrefix(cp) + cp.getVariable(PlayerVariable.USERNAME), 
+					rm.getPrefix(cp, false) + cp.getVariable(PlayerVariable.USERNAME), 
 					r.getColor() + r.getName(), 
 					lastSeen);
 			if(mostActivePunishment != null) {
 				CachedPlayer auth = pm.getCachedPlayer(mostActivePunishment.getAuthor());
-				String author = rm.getPrefix(auth) + auth.getVariable(PlayerVariable.USERNAME);
-				LocalDateTime punDate = new Timestamp(mostActivePunishment.getTimestamp()).toLocalDateTime();
+				String author = rm.getPrefix(auth, false) + auth.getVariable(PlayerVariable.USERNAME);
+				Instant punDate = Instant.ofEpochMilli(mostActivePunishment.getTimestamp());
 				Duration punDur = Duration.ofMillis(mostActivePunishment.getDuration());
 				String timeRemaining = DurationFormat.getFormattedDuration(Duration.between(Instant.now(), punDate.plus(punDur)), loc, false);
-				
+				LocalDateTime punDateTime = LocalDateTime.ofInstant(punDate, ZoneId.of("America/New_York"));
 				Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_PUNISHED, 
 						status.getMessage(Locale.getDefault()), 
 						mostActivePunishment.getReason(), 
 						author, 
-						punDate.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+						punDateTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 				if(!mostActivePunishment.isPermanent())
 					Message.sendMessage(bp, MSG.COMMAND_ADMIN_PLAYERINFO_TEMPPUNISHED, 
 							DurationFormat.getFormattedDuration(punDur, loc, false), 

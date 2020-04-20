@@ -2,44 +2,49 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>lol.kangaroo</groupId>
+
+	<parent>
+		<groupId>lol.kangaroo</groupId>
+		<artifactId>KangarooLOL</artifactId>
+		<version>${revision}</version>
+	</parent>
+
 	<artifactId>KLBungee</artifactId>
-	<version>0.0</version>
 	<name>KLBungee</name>
+
+
 	<scm>
-        <connection>scm:svn:http://127.0.0.1/dummy</connection>
-        <developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
-        <tag>HEAD</tag>
-        <url>http://127.0.0.1/dummy</url>
-    </scm>
+		<connection>scm:svn:http://127.0.0.1/dummy</connection>
+		<developerConnection>scm:svn:https://127.0.0.1/dummy</developerConnection>
+		<tag>HEAD</tag>
+		<url>http://127.0.0.1/dummy</url>
+	</scm>
+
 	<build>
-		<sourceDirectory>src</sourceDirectory>
-	      <pluginManagement>
-		      <plugins>
-		      	<plugin>
-				  <artifactId>exec-maven-plugin</artifactId>
-				  <groupId>org.codehaus.mojo</groupId>
-				  <version>1.6.0</version>
-				  <executions>
-				    <execution>
-				      <id>version-adjust</id>
-				      <phase>generate-sources</phase>
-				      <goals>
-				        <goal>exec</goal>
-				      </goals>
-				      <configuration>
-				        <executable>python</executable>
-				        <arguments>
-				        	<argument>scripts/adjust_plugin_ver.py</argument>
-				        	<argument>${project.version}.${buildNumber}</argument>
-				        </arguments>
-				      </configuration>
-				    </execution>
-				  </executions>
-				</plugin>    
-	    	</plugins>
-    	</pluginManagement>
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>buildnumber-maven-plugin</artifactId>
+				<version>1.4</version>
+				<executions>
+					<execution>
+						<id>buildnumber</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>create</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<format>{0,number}</format>
+					<items>
+						<item>buildNumber</item>
+					</items>
+					<doCheck>false</doCheck>
+					<doUpdate>false</doUpdate>
+					<revisionOnScmFailure>unknownbuild</revisionOnScmFailure>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -49,6 +54,9 @@
 					<artifactSet>
 						<includes>
 							<include>lol.kangaroo:KLCommon</include>
+							<include>com.zaxxer:HikariCP</include>
+							<include>org.slf4j:slf4j-api</include>
+							<include>org.slf4j:slf4j-simple</include>
 							<include>com.j256.two-factor-auth:two-factor-auth</include>
 						</includes>
 					</artifactSet>
@@ -62,35 +70,50 @@
 					</execution>
 				</executions>
 			</plugin>
-				<plugin>
-		        <groupId>org.codehaus.mojo</groupId>
-		        <artifactId>buildnumber-maven-plugin</artifactId>
-		        <version>1.4</version>
-		        <executions>
-		          <execution>
-		            <id>buildnumber</id>
-		            <phase>validate</phase>
-		            <goals>
-		              <goal>create</goal>
-		            </goals>
-		          </execution>
-		        </executions>
-		        <configuration>
-		          <format>{0,number}</format>
-		          <items>
-		            <item>buildNumber</item>
-		          </items>                    
-		          <doCheck>false</doCheck>
-		          <doUpdate>false</doUpdate>
-		          <revisionOnScmFailure>unknownbuild</revisionOnScmFailure>   
-		        </configuration>
-		      </plugin>
-		      <plugin>
-				  <artifactId>exec-maven-plugin</artifactId>
-				  <groupId>org.codehaus.mojo</groupId>
-		      </plugin>
-	      </plugins>
-    	<finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.6</version>
+				<executions>
+					<execution>
+						<id>copy-resources</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/classes</outputDirectory>
+							<includeEmptyDirs>true</includeEmptyDirs>
+							<resources>
+								<resource>
+									<directory>${basedir}/../common-resources</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.3.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>install-file</goal>
+						</goals>
+						<phase>install</phase>
+						<configuration>
+							<file>${project.build.finalName}.${project.packaging}</file>
+							<generatePom>false</generatePom>
+							<pomFile>dependency-reduced-pom.xml</pomFile>
+							<version>${project.version}.${buildNumber}</version>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+		<finalName>${project.artifactId}-${project.version}.${buildNumber}</finalName>
 	</build>
 
 	<properties>
@@ -112,53 +135,38 @@
 			<id>cubekrowd-repo</id>
 			<url>https://mavenrepo.cubekrowd.net/artifactory/repo/</url>
 		</repository>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
 	</repositories>
 
 	<dependencies>
-		<!-- MySQL Connector -->
-		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<version>6.0.6</version>
-		</dependency>
 		<!-- BungeeCord API -->
+<!-- 		<dependency> -->
+<!-- 			<groupId>net.md-5</groupId> -->
+<!-- 			<artifactId>bungeecord-api</artifactId> -->
+<!-- 			<version>1.7-SNAPSHOT</version> -->
+<!-- 			<scope>provided</scope> -->
+<!-- 		</dependency> -->
 		<dependency>
-			<groupId>net.md-5</groupId>
+			<groupId>com.github.HexagonMC.BungeeCord</groupId>
 			<artifactId>bungeecord-api</artifactId>
-			<version>1.7-SNAPSHOT</version>
+			<version>258</version>
 			<scope>provided</scope>
-		</dependency>
-		<!-- TaskChain -->
-		<dependency>
-			<groupId>co.aikar</groupId>
-			<artifactId>taskchain-bukkit</artifactId>
-			<version>3.6.0</version>
 		</dependency>
 		<!-- KangarooLeague Common -->
 		<dependency>
 			<groupId>lol.kangaroo</groupId>
 			<artifactId>KLCommon</artifactId>
-			<version>0.0.1</version>
+			<version>${revision}</version>
 		</dependency>
-		<!-- SuperVanish -->
-		<dependency>
-			<groupId>de.myzelyam</groupId>
-			<artifactId>SuperVanish</artifactId>
-			<version>6.1.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<!-- NuVotifier  -->
+		<!-- NuVotifier -->
 		<dependency>
 			<groupId>com.vexsoftware</groupId>
 			<artifactId>nuvotifier-bungeecord</artifactId>
 			<version>2.3.7-SNAPSHOT</version>
 			<scope>provided</scope>
-		</dependency>
-		<!-- OTP Library  -->
-		<dependency>
-			<groupId>com.j256.two-factor-auth</groupId>
-			<artifactId>two-factor-auth</artifactId>
-			<version>1.0</version>
 		</dependency>
 	</dependencies>
 </project>

@@ -18,12 +18,11 @@ import lol.kangaroo.bungee.commands.punish.UnbanCommand;
 import lol.kangaroo.bungee.commands.punish.UnblacklistCommand;
 import lol.kangaroo.bungee.commands.punish.UnmuteCommand;
 import lol.kangaroo.bungee.config.ConfigManager;
-import lol.kangaroo.bungee.database.Auth;
 import lol.kangaroo.bungee.database.DatabaseInitializer;
-import lol.kangaroo.bungee.database.Logs;
 import lol.kangaroo.bungee.listeners.AdminJoinAlertListener;
 import lol.kangaroo.bungee.listeners.BanListener;
 import lol.kangaroo.bungee.listeners.BlacklistListener;
+import lol.kangaroo.bungee.listeners.LoginListener;
 import lol.kangaroo.bungee.listeners.MuteListener;
 import lol.kangaroo.bungee.listeners.PermissionListener;
 import lol.kangaroo.bungee.listeners.PlayerDatabaseListener;
@@ -33,15 +32,17 @@ import lol.kangaroo.bungee.permissions.RankPermissionExpiry;
 import lol.kangaroo.bungee.player.Money;
 import lol.kangaroo.bungee.player.PlayerCacheManager;
 import lol.kangaroo.bungee.player.PlayerManager;
-import lol.kangaroo.bungee.player.PlayerVariableManager;
-import lol.kangaroo.bungee.player.punish.PunishManager;
 import lol.kangaroo.bungee.servers.ServerManager;
 import lol.kangaroo.bungee.util.PluginMessage;
 import lol.kangaroo.common.KLCommon;
+import lol.kangaroo.common.database.Auth;
 import lol.kangaroo.common.database.DatabaseManager;
+import lol.kangaroo.common.database.Logs;
 import lol.kangaroo.common.database.Setting;
 import lol.kangaroo.common.permissions.PermissionManager;
 import lol.kangaroo.common.player.PlayerHistory;
+import lol.kangaroo.common.player.PlayerVariableManager;
+import lol.kangaroo.common.player.punish.PunishManager;
 import lol.kangaroo.common.util.I18N;
 import lol.kangaroo.common.util.MSG;
 import net.md_5.bungee.api.plugin.Plugin;
@@ -65,6 +66,8 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	private PlayerManager pm;
 	private PermissionManager prm;
 	private VoteListener vol;
+	
+	private LoginListener lgl;
 	
 	private RankManager rm;
 	
@@ -109,8 +112,10 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		Logs.init(db);
 		Auth.init(db);
 		
-		long pullUpdateInterval = settings.getLong("cacheUpdateInterval");
-		long flushInterval = settings.getLong("cacheFlushInterval");
+		Configuration cacheSettings = settings.getSection("cache-settings");
+		
+		long pullUpdateInterval = cacheSettings.getLong("update-interval");
+		long flushInterval = cacheSettings.getLong("flush-interval");
 		
 		pvm = new PlayerVariableManager(db);
 		pcm = new PlayerCacheManager(this, pullUpdateInterval, flushInterval);
@@ -166,6 +171,8 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 		pluginManager.registerListener(this, bal = new BanListener(this));
 		pluginManager.registerListener(this, bll = new BlacklistListener(this));
 		pluginManager.registerListener(this, mul = new MuteListener(this));
+		
+		pluginManager.registerListener(this, lgl = new LoginListener(this, bll, bal, pdl));
 	}
 	
 	private void registerLoopTasks() {
@@ -233,6 +240,10 @@ public class KLBungeePlugin extends Plugin implements KLCommon {
 	
 	public MuteListener getMuteListener() {
 		return mul;
+	}
+	
+	public LoginListener getLoginListener() {
+		return lgl;
 	}
 	
 	public VoteListener getVoteListener() {

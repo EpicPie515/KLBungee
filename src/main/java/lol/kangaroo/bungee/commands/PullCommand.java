@@ -31,7 +31,7 @@ public class PullCommand extends CommandExecutor {
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
 		ServerInfo srv = sender.getServer().getInfo();
 		String srvName = pl.getServerManager().formatServerName(pl.getServerManager().getServerID(srv.getName()));
-		String senderName = pl.getRankManager().getPrefix(bp) + bp.getVariable(PlayerVariable.NICKNAME);
+		String senderName = pl.getRankManager().getPrefix(bp, true) + bp.getVariable(PlayerVariable.NICKNAME);
 		if(args.length == 0) {
 			if(label.equalsIgnoreCase("pullall") || label.equalsIgnoreCase("spullall")) {
 				int pcount = 0;
@@ -75,7 +75,7 @@ public class PullCommand extends CommandExecutor {
 			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.PLAYER_OFFLINE);
 			return;
 		}
-		String prefix = pm.getRankManager().getPrefix(cp);
+		String prefix = pm.getRankManager().getPrefix(cp, true);
 		String nickname = (String) cp.getVariable(PlayerVariable.NICKNAME);
 		if(pp.getServer().getInfo().getName().equals(srv.getName())) {
 			Message.sendMessage(bp, MSG.COMMAND_PULL_ALREADYTHERE, prefix + nickname, srvName);

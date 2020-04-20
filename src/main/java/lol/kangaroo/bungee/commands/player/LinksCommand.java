@@ -59,7 +59,7 @@ public class LinksCommand extends CommandExecutor {
 				Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.NO_PERM);
 				return;
 			}
-			String senderPrefix = pm.getRankManager().getPrefix(bp);
+			String senderPrefix = pm.getRankManager().getPrefix(bp, true);
 			String senderNick = (String) bp.getVariable(PlayerVariable.NICKNAME);
 			CachedPlayer cp = pm.getCachedPlayer(pm.getFromCurrentNick(args[0]));
 			if(cp == null) {
@@ -71,7 +71,7 @@ public class LinksCommand extends CommandExecutor {
 				Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.PLAYER_OFFLINE);
 				return;
 			}
-			String prefix = pm.getRankManager().getPrefix(cp);
+			String prefix = pm.getRankManager().getPrefix(cp, true);
 			String nickname = (String) cp.getVariable(PlayerVariable.NICKNAME);
 			switch(label.toLowerCase()) {
 			case "teamspeak":

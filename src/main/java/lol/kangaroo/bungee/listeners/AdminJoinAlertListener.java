@@ -30,7 +30,7 @@ public class AdminJoinAlertListener implements Listener {
 		for(BasePlayer cp : pm.getNotifiableStaff()) {
 			Rank rank = (Rank) cp.getVariable(PlayerVariable.RANK);
 			if(rank.getLevel() > Rank.SRMOD.getLevel())
-				Message.sendMessage(cp, MSG.ADMIN_JOINALERT, op.getVariable(PlayerVariable.USERNAME));
+				Message.sendMessage(cp, MSG.PREFIX_ADMIN, MSG.ADMIN_JOINALERT, op.getVariable(PlayerVariable.USERNAME));
 		}
 	}
 	
@@ -42,7 +42,7 @@ public class AdminJoinAlertListener implements Listener {
 			for(BasePlayer cp : pm.getNotifiableStaff()) {
 				Rank rank = (Rank) cp.getVariable(PlayerVariable.RANK);
 				if(rank.getLevel() > Rank.SRMOD.getLevel())
-						Message.sendMessage(cp, MSG.ADMIN_LEAVEALERT, op.getVariable(PlayerVariable.USERNAME));
+						Message.sendMessage(cp, MSG.PREFIX_ADMIN, MSG.ADMIN_LEAVEALERT, op.getVariable(PlayerVariable.USERNAME));
 			}
 		});
 	}

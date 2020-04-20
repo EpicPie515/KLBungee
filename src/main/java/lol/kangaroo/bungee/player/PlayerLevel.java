@@ -89,14 +89,14 @@ public enum PlayerLevel {
 	
 	private static PlayerManager pm;
 	private static ConfigManager conf;
+	public static char SYMBOL = '\u272f';
 	
 	public static void init(PlayerManager plm, ConfigManager config) {
 		pm = plm;
 		conf = config;
-		SYMBOL = conf.getConfig("settings").getString("xp-symbol");
+		Character.toChars(conf.getConfig("settings").getString("xp-symbol").codePointAt(0));
 	}
 	
-	public static String SYMBOL = "\u272F";
 	
 	public static PlayerLevel getByName(String name) {
 		for(PlayerLevel l : values()) {

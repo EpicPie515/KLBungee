@@ -33,7 +33,7 @@ public class PingCommand extends CommandExecutor {
 			Message.sendMessage(bp, MSG.PREFIX_ERROR, MSG.PLAYER_OFFLINE);
 			return;
 		}
-		String prefix = pm.getRankManager().getPrefix(cp);
+		String prefix = pm.getRankManager().getPrefix(cp, true);
 		String nickname = (String) cp.getVariable(PlayerVariable.NICKNAME);
 		Message.sendMessage(bp, MSG.PREFIX_PLAYER, MSG.COMMAND_PING_OTHER, prefix + nickname, pp.getPing());
 	}
@@ -54,7 +54,7 @@ public class PingCommand extends CommandExecutor {
 			Message.sendConsole( MSG.PREFIX_ERROR, MSG.PLAYER_OFFLINE);
 			return;
 		}
-		String prefix = pm.getRankManager().getPrefix(cp);
+		String prefix = pm.getRankManager().getPrefix(cp, true);
 		String nickname = (String) cp.getVariable(PlayerVariable.NICKNAME);
 		Message.sendConsole(MSG.PREFIX_PLAYER, MSG.COMMAND_PING_OTHER, prefix + nickname, pp.getPing());
 	}

@@ -20,7 +20,7 @@ public class RankPermissionExpiry implements Runnable {
 	@Override
 	public void run() {
 		for(CachedPlayer cp : plugin.getPlayerManager().getPlayerCacheManager().getPlayerCache()) {
-			plugin.getPlayerManager().demoteIfRankExpired(cp);
+			plugin.getPlayerManager().updateGrants(cp);
 			plugin.getPlayerManager().removeExpiredPermissions(cp);
 		}
 	}

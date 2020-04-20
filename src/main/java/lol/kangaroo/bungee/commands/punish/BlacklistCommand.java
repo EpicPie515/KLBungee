@@ -16,7 +16,7 @@ import net.md_5.bungee.api.connection.ProxiedPlayer;
 public class BlacklistCommand extends CommandExecutor {
 
 	public BlacklistCommand(PlayerManager pm, ProxyServer proxy) {
-		super(pm, proxy, "blacklist", Rank.SRMOD.getPerm(), "bl", "sblacklist", "sbl");
+		super(pm, proxy, "blacklist", Rank.SRMOD.getPerm(), "bl", "sblacklist", "sbl", "ablacklist", "abl");
 	}
 
 	@Override
@@ -28,15 +28,18 @@ public class BlacklistCommand extends CommandExecutor {
 		proxy.getScheduler().runAsync(KLBungeePlugin.instance, () -> {
 			UUID uuid = pm.getFromAny(args[0]);
 			CachedPlayer cp = pm.getCachedPlayer(uuid);
-			String reason = "No Reason Specified";
+			String reason;
 			if(args.length > 1) {
 				reason = "";
 				for(int i = 1; i < args.length; i++) {
 					reason += args[i] + " ";
 				}
+			} else {
+				Message.sendMessage(sender, MSG.PREFIX_ERROR, MSG.COMMAND_BLACKLIST_NOREASON);
+				return;
 			}
 			reason = reason.trim();
-			if(!pm.blacklistPlayer(cp, reason, bp, (label.equalsIgnoreCase("sblacklist") || label.equalsIgnoreCase("sbl") ? true : false)))
+			if(!pm.blacklistPlayer(cp, reason, bp, (label.equalsIgnoreCase("sblacklist") || label.equalsIgnoreCase("sbl") ? true : false), (label.equalsIgnoreCase("ablacklist") || label.equalsIgnoreCase("abl") ? true : false)))
 				Message.sendMessage(sender, MSG.PREFIX_ERROR, MSG.COMMAND_BLACKLIST_ALREADY);
 		});
 	}
@@ -58,7 +61,7 @@ public class BlacklistCommand extends CommandExecutor {
 				}
 			}
 			reason = reason.trim();
-			if(!pm.blacklistPlayer(cp, reason, null, (label.equalsIgnoreCase("sblacklist") || label.equalsIgnoreCase("sbl") ? true : false)))
+			if(!pm.blacklistPlayer(cp, reason, null, (label.equalsIgnoreCase("sblacklist") || label.equalsIgnoreCase("sbl") ? true : false), (label.equalsIgnoreCase("ablacklist") || label.equalsIgnoreCase("abl") ? true : false)))
 				Message.sendConsole(MSG.PREFIX_ERROR, MSG.COMMAND_BLACKLIST_ALREADY);
 		});
 	}

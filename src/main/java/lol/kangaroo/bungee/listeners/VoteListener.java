@@ -6,13 +6,13 @@ import java.util.UUID;
 import com.vexsoftware.votifier.bungee.events.VotifierEvent;
 import com.vexsoftware.votifier.model.Vote;
 
-import lol.kangaroo.bungee.database.Logs;
 import lol.kangaroo.bungee.player.Money;
 import lol.kangaroo.bungee.player.PlayerLevel;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.player.PlayerVoteStreak;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
+import lol.kangaroo.common.database.Logs;
 import lol.kangaroo.common.player.CachedPlayer;
 import lol.kangaroo.common.util.MSG;
 import net.md_5.bungee.api.plugin.Listener;

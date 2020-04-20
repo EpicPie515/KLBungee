@@ -11,11 +11,11 @@ import java.util.regex.Pattern;
 
 import lol.kangaroo.bungee.commands.AdminCommand;
 import lol.kangaroo.bungee.commands.Subcommand;
-import lol.kangaroo.bungee.database.Auth;
-import lol.kangaroo.bungee.database.Logs;
 import lol.kangaroo.bungee.player.PlayerManager;
 import lol.kangaroo.bungee.util.Message;
 import lol.kangaroo.bungee.util.ThreadManager;
+import lol.kangaroo.common.database.Auth;
+import lol.kangaroo.common.database.Logs;
 import lol.kangaroo.common.permissions.PermissionManager;
 import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
@@ -40,6 +40,11 @@ public class GrantSub extends Subcommand {
 	private static final Pattern argPattern = Pattern.compile("^-([a-z][a-z]*)=(.+)$", Pattern.CASE_INSENSITIVE);
 	private static final Pattern timePattern = Pattern.compile("^([0-9]+)([smhdwy])$", Pattern.CASE_INSENSITIVE);
 
+	/**
+	 * TODO rework ranks to stack, such that a low rank lasting 10 days and then after grantred a higher ank lasting 20 minutes,
+	 *  it will expire down to the lower, but if the higher rank was 12 days it would append for all layers, and expire to the low rank, not player rank, for the next 10 days.
+	 */
+	
 	@Override
 	public void execute(ProxiedPlayer sender, BasePlayer bp, String label, String[] args) {
 		Map<Character, String> grantArgs = new HashMap<>();
@@ -166,10 +171,10 @@ public class GrantSub extends Subcommand {
 				typeValFormatted = rank.getColor() + rank.getName();
 				PlayerUpdateCache c = target.createUpdateCache();
 				target.setVariableInUpdate(c, PlayerVariable.RANK, rank);
-				target.setVariableInUpdate(c, PlayerVariable.RANK_EXPIRETIME, (permanent ? null : Timestamp.from(end)));
+				//target.setVariableInUpdate(c, PlayerVariable.RANK_EXPIRETIME, (permanent ? null : Timestamp.from(end)));
 				c.pushUpdates();
 				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_RANK_SUCCESS, 
-						pm.getRankManager().getPrefixDirect(target.getUniqueId()) + target.getVariable(PlayerVariable.USERNAME), 
+						pm.getRankManager().getPrefixDirect(target.getUniqueId(), false) + target.getVariable(PlayerVariable.USERNAME), 
 						typeValFormatted, 
 						dur, 
 						note);
@@ -179,7 +184,7 @@ public class GrantSub extends Subcommand {
 				PermissionManager prm = pm.getPermissionManager();
 				prm.setPlayerPermission(target, typeValue, pVal, (permanent ? null : Timestamp.from(end)));
 				Message.sendMessage(bp, MSG.PREFIX_ADMIN, MSG.COMMAND_ADMIN_GRANT_PERM_SUCCESS, 
-						pm.getRankManager().getPrefixDirect(target.getUniqueId()) + target.getVariable(PlayerVariable.USERNAME), 
+						pm.getRankManager().getPrefixDirect(target.getUniqueId(), false) + target.getVariable(PlayerVariable.USERNAME), 
 						typeValFormatted, 
 						dur, 
 						note);

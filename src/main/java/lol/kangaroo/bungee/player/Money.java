@@ -9,6 +9,7 @@ import lol.kangaroo.bungee.util.ThreadManager;
 import lol.kangaroo.common.database.Setting;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
+import lol.kangaroo.common.player.DatabasePlayer;
 import lol.kangaroo.common.player.PlayerUpdateCache;
 import lol.kangaroo.common.player.PlayerVariable;
 import lol.kangaroo.common.util.MSG;

@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import lol.kangaroo.bungee.KLBungeePlugin;
 import lol.kangaroo.common.player.CachedPlayer;
+import lol.kangaroo.common.player.DatabasePlayer;
 import lol.kangaroo.common.player.PlayerVariable;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 
@@ -113,6 +114,14 @@ public class PlayerCacheManager {
 		uuidCache.remove(cp.getUniqueId());
 	}
 	
+	public long getMillisUntilPull() {
+		return millisUntilPull;
+	}
+
+	public long getMillisUntilFlush() {
+		return millisUntilFlush;
+	}
+
 	/**
 	 * Removes @param oldPlayer, adds @param newPlayer.
 	 * 

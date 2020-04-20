@@ -1,15 +1,13 @@
 package lol.kangaroo.bungee.permissions;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.UUID;
 
-import lol.kangaroo.bungee.player.DatabasePlayer;
 import lol.kangaroo.bungee.player.PlayerManager;
-import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.permissions.IRankManager;
+import lol.kangaroo.common.permissions.Rank;
 import lol.kangaroo.common.player.BasePlayer;
 import lol.kangaroo.common.player.CachedPlayer;
+import lol.kangaroo.common.player.DatabasePlayer;
 import lol.kangaroo.common.player.PlayerVariable;
 import net.md_5.bungee.api.ChatColor;
 
@@ -22,10 +20,10 @@ public class RankManager implements IRankManager {
 	}
 	
 	@Override
-	public String getPrefix(UUID uuid) {
+	public String getPrefix(UUID uuid, boolean useModifiedRank) {
 		CachedPlayer pl = pm.getCachedPlayer(uuid);
 		if(pl == null) return Rank.PLAYER.getRawPrefix();
-		Rank rank = (Rank) pl.getVariable(PlayerVariable.RANK);
+		Rank rank = getRank(pl, useModifiedRank);
 		String prefix = rank.getColor() + rank.getRawPrefix();
 		if(rank.isPrefixFormatted()) {
 			ChatColor c1 = (ChatColor) pl.getVariable(PlayerVariable.PREFIX_C1);
@@ -36,8 +34,8 @@ public class RankManager implements IRankManager {
 	}
 
 	@Override
-	public String getPrefix(BasePlayer pl) {
-		Rank rank = (Rank) pl.getVariable(PlayerVariable.RANK);
+	public String getPrefix(BasePlayer pl, boolean useModifiedRank) {
+		Rank rank = getRank(pl, useModifiedRank);
 		String prefix = rank.getColor() + rank.getRawPrefix();
 		if(rank.isPrefixFormatted()) {
 			ChatColor c1 = (ChatColor) pl.getVariable(PlayerVariable.PREFIX_C1);
@@ -48,10 +46,10 @@ public class RankManager implements IRankManager {
 	}
 
 	@Override
-	public String getPrefixDirect(UUID uuid) {
+	public String getPrefixDirect(UUID uuid, boolean useModifiedRank) {
 		DatabasePlayer pl = pm.getDatabasePlayer(uuid);
 		if(pl == null) return Rank.PLAYER.getRawPrefix();
-		Rank rank = (Rank) pl.getVariable(PlayerVariable.RANK);
+		Rank rank = getRank(pl, useModifiedRank);
 		String prefix = rank.getColor() + rank.getRawPrefix();
 		if(rank.isPrefixFormatted()) {
 			ChatColor c1 = (ChatColor) pl.getVariable(PlayerVariable.PREFIX_C1);
@@ -83,39 +81,4 @@ public class RankManager implements IRankManager {
 		if(dp == null) return Rank.PLAYER;
 		return (Rank) dp.getVariable(PlayerVariable.RANK);
 	}
-
-	@Override
-	public Instant getRankExpiry(UUID uuid) {
-		CachedPlayer cp = pm.getCachedPlayer(uuid);
-		if(cp == null) return null;
-		Timestamp expiry = (Timestamp) cp.getVariable(PlayerVariable.RANK_EXPIRETIME);
-		if(expiry == null) return null;
-		if(expiry.getTime() <= 0) return null;
-		return expiry.toInstant();
-	}
-
-	@Override
-	public Instant getRankExpiry(BasePlayer pl) {
-		if(pl == null) return null;
-		Timestamp expiry = (Timestamp) pl.getVariable(PlayerVariable.RANK_EXPIRETIME);
-		if(expiry == null) return null;
-		if(expiry.getTime() <= 0) return null;
-		return expiry.toInstant();
-	}
-
-	@Override
-	public Rank getRankExprireTo(UUID uuid) {
-		CachedPlayer cp = pm.getCachedPlayer(uuid);
-		if(cp == null) return Rank.PLAYER;
-		Rank expireTo = (Rank) cp.getVariable(PlayerVariable.RANK_EXPIRETO);
-		return expireTo;
-	}
-
-	@Override
-	public Rank getRankExprireTo(BasePlayer pl) {
-		if(pl == null) return Rank.PLAYER;
-		Rank expireTo = (Rank) pl.getVariable(PlayerVariable.RANK_EXPIRETO);
-		return expireTo;
-	}
-
 }
